@@ -1,0 +1,88 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import ThemeToggle from './ThemeToggle';
+
+const navLinks = [
+  { href: '/', label: 'Discover' },
+  { href: '/collection', label: 'Collection' },
+  { href: '/groups', label: 'Groups' },
+];
+
+export default function Navbar() {
+  const pathname = usePathname();
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 h-16">
+      {/* Glassmorphism bar */}
+      <div
+        className="h-full px-6 flex items-center justify-between border-b"
+        style={{
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(16px)',
+          borderColor: 'var(--border-subtle)',
+        }}
+      >
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <span
+            className="text-lg neon-text-cyan glitch-hover font-display"
+            data-text="CARTRIDGE"
+          >
+            CARTRIDGE
+          </span>
+          <span
+            className="text-lg font-black font-display"
+            style={{
+              color: 'var(--accent-secondary)',
+              textShadow: '0 0 8px var(--accent-secondary)',
+            }}
+          >
+            VAULT
+          </span>
+        </Link>
+
+        {/* Nav links */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map(({ href, label }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="px-4 py-2 rounded-md transition-all duration-200 font-display text-[0.72rem] tracking-widest"
+                style={{
+                  color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                  textShadow: isActive ? '0 0 8px var(--accent)' : 'none',
+                  borderBottom: isActive
+                    ? '2px solid var(--accent)'
+                    : '2px solid transparent',
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <Link href="/login" className="btn-neon btn-neon-cyan text-xs">
+            Sign In
+          </Link>
+        </div>
+      </div>
+
+      {/* Theme-aware bottom border line */}
+      <div
+        className="h-px w-full"
+        style={{
+          background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
+          opacity: 0.4,
+        }}
+      />
+    </header>
+  );
+}

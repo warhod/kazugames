@@ -1,0 +1,406 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts: loaded via next/font/google in layout.tsx (--font-inter, --font-orbitron) */
+
+/* ════════════════════════════════════════════
+   CSS VARIABLES — Cyberpunk Theme
+════════════════════════════════════════════ */
+:root {
+  /* Default: Cyberpunk */
+  --bg-void: #080808;
+  --bg-surface: #111118;
+  --bg-elevated: #1a1a2e;
+  --accent: #00f3ff;
+  --accent-secondary: #ff003c;
+  --neon-yellow: #fcee0a;
+  --neon-green: #39ff14;
+  --neon-purple: #bf00ff;
+  --text-primary: #e0e0e0;
+  --text-muted: #6b7280;
+  --border-subtle: rgba(0, 243, 255, 0.15);
+  --glass-bg: rgba(17, 17, 24, 0.7);
+  --font-main: var(--font-inter);
+  --font-display: var(--font-orbitron);
+  /* Aliases for legacy utilities / keyframes */
+  --neon-cyan: var(--accent);
+  --neon-pink: var(--accent-secondary);
+  /* Text on filled accent buttons */
+  --btn-solid-text: #080808;
+}
+
+[data-theme='zelda'] {
+  --bg-void: #0a1c15;
+  --bg-surface: #1b3022;
+  --bg-elevated: #2d4a3a;
+  --accent: #d4af37;
+  --accent-secondary: #2a5d4e;
+  --neon-yellow: #fcee0a;
+  --neon-green: #39ff14;
+  --neon-purple: #ead6a5;
+  --text-primary: #ead6a5;
+  --text-muted: #a5b5a9;
+  --border-subtle: rgba(212, 175, 55, 0.2);
+  --glass-bg: rgba(27, 48, 34, 0.8);
+  --font-main: var(--font-inter);
+  --font-display: var(--font-cinzel);
+  --neon-cyan: var(--accent);
+  --neon-pink: var(--accent-secondary);
+  --btn-solid-text: #0c0c0c;
+}
+
+[data-theme='animal-crossing'] {
+  --bg-void: #f9fdf9;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f1f8e9;
+  --accent: #8bc34a;
+  --accent-secondary: #00bcd4;
+  --neon-yellow: #ffeb3b;
+  --neon-green: #4caf50;
+  --neon-purple: #9c27b0;
+  --text-primary: #5d4037;
+  --text-muted: #8d6e63;
+  --border-subtle: rgba(139, 195, 74, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --font-main: var(--font-inter);
+  --font-display: var(--font-varela-round);
+  --neon-cyan: var(--accent);
+  --neon-pink: var(--accent-secondary);
+  --btn-solid-text: #4e342e;
+}
+
+/* ════════════════════════════════════════════
+   BASE RESET & BODY
+════════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-main), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay - hidden in Animal Crossing */
+[data-theme='animal-crossing'] body::before {
+  display: none;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Cyber grid background - hidden in Animal Crossing */
+[data-theme='animal-crossing'] body::after {
+  display: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ════════════════════════════════════════════
+   TYPOGRAPHY
+════════════════════════════════════════════ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.05em;
+}
+
+/* ════════════════════════════════════════════
+   NEON TEXT UTILITIES
+════════════════════════════════════════════ */
+.neon-text-cyan {
+  color: var(--accent);
+  text-shadow:
+    0 0 8px var(--accent),
+    0 0 20px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.neon-text-pink {
+  color: var(--accent-secondary);
+  text-shadow:
+    0 0 8px var(--accent-secondary),
+    0 0 20px color-mix(in srgb, var(--accent-secondary) 50%, transparent);
+}
+
+.neon-text-yellow {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 8px var(--neon-yellow), 0 0 20px rgba(252, 238, 10, 0.5);
+}
+
+.neon-text-green {
+  color: var(--neon-green);
+  text-shadow: 0 0 8px var(--neon-green), 0 0 20px rgba(57, 255, 20, 0.5);
+}
+
+/* ════════════════════════════════════════════
+   GLITCH EFFECT ON HOVER
+════════════════════════════════════════════ */
+@keyframes glitch-anim {
+  0%   { clip-path: inset(0 0 98% 0); transform: translate(-2px, 0); }
+  10%  { clip-path: inset(40% 0 50% 0); transform: translate(2px, 0); }
+  20%  { clip-path: inset(80% 0 10% 0); transform: translate(-1px, 0); }
+  30%  { clip-path: inset(20% 0 70% 0); transform: translate(1px, 0); }
+  40%  { clip-path: inset(60% 0 30% 0); transform: translate(-2px, 0); }
+  50%  { clip-path: inset(10% 0 85% 0); transform: translate(2px, 0); }
+  60%  { clip-path: inset(90% 0 0 0);   transform: translate(-1px, 0); }
+  100% { clip-path: inset(0 0 0 0);     transform: translate(0); }
+}
+
+@keyframes glitch-anim2 {
+  0%   { clip-path: inset(50% 0 40% 0); transform: translate(2px, 0); color: var(--neon-pink); }
+  25%  { clip-path: inset(20% 0 70% 0); transform: translate(-2px, 0); }
+  50%  { clip-path: inset(70% 0 20% 0); transform: translate(2px, 0); color: var(--neon-cyan); }
+  75%  { clip-path: inset(10% 0 80% 0); transform: translate(-1px, 0); }
+  100% { clip-path: inset(0 0 0 0);     transform: translate(0); }
+}
+
+.glitch-hover {
+  position: relative;
+}
+
+.glitch-hover::before,
+.glitch-hover::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.glitch-hover:hover::before {
+  opacity: 0.7;
+  animation: glitch-anim 0.3s steps(1) forwards;
+  color: var(--accent);
+}
+
+.glitch-hover:hover::after {
+  opacity: 0.5;
+  animation: glitch-anim2 0.3s steps(1) forwards;
+  color: var(--accent-secondary);
+}
+
+/* ════════════════════════════════════════════
+   GLASSMORPHISM CARD
+════════════════════════════════════════════ */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  box-shadow:
+    0 0 20px color-mix(in srgb, var(--accent) 14%, transparent),
+    0 4px 32px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+/* ════════════════════════════════════════════
+   NEON BUTTON
+════════════════════════════════════════════ */
+.btn-neon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 6px;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-neon-cyan {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  box-shadow:
+    0 0 6px color-mix(in srgb, var(--accent) 35%, transparent),
+    inset 0 0 6px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.btn-neon-cyan:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--accent) 45%, transparent),
+    inset 0 0 16px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.btn-neon-pink {
+  background: transparent;
+  border: 1px solid var(--accent-secondary);
+  color: var(--accent-secondary);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent-secondary) 35%, transparent);
+}
+
+.btn-neon-pink:hover {
+  background: color-mix(in srgb, var(--accent-secondary) 12%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent-secondary) 45%, transparent);
+}
+
+.btn-neon-solid {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--btn-solid-text);
+  font-weight: 700;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.btn-neon-solid:hover {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 60%, transparent);
+  background: color-mix(in srgb, var(--accent) 88%, white);
+  border-color: color-mix(in srgb, var(--accent) 88%, white);
+}
+
+/* ════════════════════════════════════════════
+   NEON INPUT
+════════════════════════════════════════════ */
+.input-neon {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.input-neon:focus {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    0 0 12px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.input-neon::placeholder {
+  color: var(--text-muted);
+}
+
+/* ════════════════════════════════════════════
+   STATUS BADGES
+════════════════════════════════════════════ */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 100px;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-owned    { background: rgba(57, 255, 20, 0.12);  color: var(--neon-green);  border: 1px solid rgba(57, 255, 20, 0.3); }
+.badge-wishlist {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.badge-playing  { background: rgba(252, 238, 10, 0.12); color: var(--neon-yellow); border: 1px solid rgba(252, 238, 10, 0.3); }
+.badge-completed{ background: rgba(191, 0, 255, 0.12);  color: var(--neon-purple); border: 1px solid rgba(191, 0, 255, 0.3); }
+.badge-abandoned{ background: rgba(107, 114, 128, 0.12); color: var(--text-muted); border: 1px solid rgba(107, 114, 128, 0.3); }
+
+/* ════════════════════════════════════════════
+   SKELETON LOADER
+════════════════════════════════════════════ */
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    color-mix(in srgb, var(--accent) 8%, var(--bg-surface)) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 6px;
+}
+
+/* ════════════════════════════════════════════
+   PRICE BADGE
+════════════════════════════════════════════ */
+.price-badge {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 6px rgba(252, 238, 10, 0.5);
+}
+
+.price-badge-sale {
+  color: var(--neon-green);
+  text-shadow: 0 0 6px rgba(57, 255, 20, 0.5);
+}
+
+.price-msrp-strike {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  text-decoration: line-through;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* ════════════════════════════════════════════
+   SCROLLBAR (Webkit)
+════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 32%, transparent);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ════════════════════════════════════════════
+   SELECTION
+════════════════════════════════════════════ */
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--text-primary);
+}
