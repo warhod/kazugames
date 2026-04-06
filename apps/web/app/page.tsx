@@ -4,10 +4,10 @@ import CollectionGrid from '@/components/CollectionGrid';
 
 export const metadata: Metadata = {
   title: 'CartridgeVault — Track Your Game Collection',
-  description: 'Discover deals on Nintendo Switch games, track your collection and wishlist, and share with your friend group.',
+  description:
+    'Discover deals on Nintendo Switch games, track your collection and wishlist, and share with your friend group.',
 };
 
-// Demo games shown on the landing page (will be replaced by DB data post-auth)
 const FEATURED_GAMES = [
   {
     id: '1',
@@ -45,6 +45,24 @@ const FEATURED_GAMES = [
     msrp: 39.99,
     platform: 'Switch',
   },
+  {
+    id: '5',
+    title: 'Fire Emblem Engage',
+    deku_url: 'https://www.dekudeals.com/items/fire-emblem-engage',
+    image_url: null,
+    current_price: 35.99,
+    msrp: 59.99,
+    platform: 'Switch',
+  },
+  {
+    id: '6',
+    title: 'Pikmin 4',
+    deku_url: 'https://www.dekudeals.com/items/pikmin-4',
+    image_url: null,
+    current_price: 44.99,
+    msrp: 59.99,
+    platform: 'Switch',
+  },
 ];
 
 export default function HomePage() {
@@ -63,8 +81,14 @@ export default function HomePage() {
         />
 
         {/* Eyebrow */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6 border text-[10px] font-display tracking-[0.2em]"
-          style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-elevated)', color: 'var(--accent)' }}>
+        <div
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6 border text-[10px] font-display tracking-[0.2em]"
+          style={{
+            borderColor: 'var(--border-subtle)',
+            background: 'var(--bg-elevated)',
+            color: 'var(--accent)',
+          }}
+        >
           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--accent)' }} />
           LIVE PRICES FROM DEKUDEALS
         </div>
@@ -106,7 +130,10 @@ export default function HomePage() {
       {/* ── FEATURED GAMES ───────────────────────── */}
       <section className="px-6 pb-24">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8 border-b pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div
+            className="flex items-center justify-between mb-8 border-b pb-4"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
             <h2 className="text-xl font-bold font-display text-text-primary tracking-widest uppercase">
               <span style={{ color: 'var(--accent)' }}>★</span> FEATURED DEALS
             </h2>
@@ -115,6 +142,58 @@ export default function HomePage() {
             </span>
           </div>
           <CollectionGrid games={FEATURED_GAMES} />
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ─────────────────────────── */}
+      <section className="px-6 pb-24">
+        <div className="max-w-4xl mx-auto">
+          <h2
+            className="text-xl font-bold font-display tracking-widest uppercase text-center mb-12"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            <span style={{ color: 'var(--accent)' }}>⬡</span> HOW IT WORKS
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                step: '01',
+                title: 'SEARCH & TRACK',
+                desc: 'Find any Nintendo Switch game via DekuDeals. Add it to your collection with one click.',
+              },
+              {
+                step: '02',
+                title: 'BUILD GROUPS',
+                desc: "Create a squad, invite your friends, and see everyone's libraries in one place.",
+              },
+              {
+                step: '03',
+                title: 'LEND & BORROW',
+                desc: 'Mark games as loanable. Friends can request to borrow — you approve or decline.',
+              },
+            ].map((item) => (
+              <div key={item.step} className="glass-card p-6 text-center">
+                <div
+                  className="text-3xl font-black font-display mb-3"
+                  style={{
+                    color: 'var(--accent)',
+                    textShadow: '0 0 12px color-mix(in srgb, var(--accent) 40%, transparent)',
+                  }}
+                >
+                  {item.step}
+                </div>
+                <h3
+                  className="font-display text-sm tracking-[0.15em] mb-2"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {item.title}
+                </h3>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
