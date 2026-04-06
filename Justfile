@@ -67,8 +67,24 @@ scraper-build:
     cd packages/deku-scraper && bun run build
 
 [group("setup")]
+[doc("Remove build outputs, Bun PM cache, workspace node_modules, and common tool caches")]
+clean:
+    rm -rf apps/web/.next apps/web/out apps/web/build
+    rm -rf packages/deku-scraper/dist
+    rm -rf .turbo coverage .vercel
+    find . -name '*.tsbuildinfo' ! -path '*/node_modules/*' -type f -exec rm -f {} +
+    find . -name '.eslintcache' ! -path '*/node_modules/*' -type f -exec rm -f {} +
+    find . -name node_modules -type d -prune -exec rm -rf {} +
+    bun pm cache rm
+    @echo "Clean done. Run 'bun install' (or 'just setup') before building again."
+
+[group("setup")]
 [doc("Install deps and ensure supabase is initialized; then link a project")]
 setup:
     bun install
     bunx supabase init || true
     @echo "Run 'just db-link <project-ref>' to connect to your Supabase project"
+    @echo "Setting up .env.local..."
+    [ -f apps/web/.env.local ] || cp apps/web/.env.local.example apps/web/.env.local
+    @echo "Done. Run 'just dev' to start the web app."
+    @echo "Then visit http://localhost:3000 to see the app."
