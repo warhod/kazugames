@@ -40,16 +40,7 @@ drop policy if exists "user_games_select_fellow_group_member" on public.user_gam
 create policy "user_games_select_fellow_group_member"
   on public.user_games for select
   to authenticated
-  using (
-    exists (
-      select 1
-      from public.group_members gm_self
-      inner join public.group_members gm_peer
-        on gm_self.group_id = gm_peer.group_id
-      where gm_self.user_id = auth.uid()
-        and gm_peer.user_id = user_games.user_id
-    )
-  );
+  using (public.user_shares_group_with(user_id));
 
 drop policy if exists "user_games_insert_own" on public.user_games;
 create policy "user_games_insert_own"
