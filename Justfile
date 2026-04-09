@@ -42,8 +42,9 @@ db-login:
     bunx supabase login
 
 [group("build")]
-[doc("Production build for the web app")]
+[doc("Production build for the web app (rebuilds scraper first)")]
 build:
+    cd packages/deku-scraper && bun run build
     cd apps/web && bun run build
 
 [group("build")]
