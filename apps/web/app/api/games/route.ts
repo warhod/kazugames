@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { scrapeGame, scrapeSearch } from 'deku-scraper';
+import { scrapeGame, scrapeSearch, normalizeDekuUrl } from 'deku-scraper';
 
 const STALE_MS = 24 * 60 * 60 * 1000;
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   const supabase = createClient();
 
   if (url) {
-    return handleUrlLookup(supabase, url);
+    return handleUrlLookup(supabase, normalizeDekuUrl(url));
   }
 
   return handleSearch(supabase, query!);

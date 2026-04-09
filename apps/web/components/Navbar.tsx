@@ -2,6 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/client';
 import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
@@ -12,6 +15,25 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user: u } }) => setUser(u));
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+    window.location.href = '/';
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16">
@@ -69,9 +91,24 @@ export default function Navbar() {
         {/* Action buttons */}
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          <Link href="/login" className="btn-neon btn-neon-cyan text-xs">
-            Sign In
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span
+                className="hidden sm:inline max-w-[140px] truncate text-[10px] font-display"
+                style={{ color: 'var(--text-muted)' }}
+                title={user.email ?? undefined}
+              >
+                {user.email}
+              </span>
+              <button type="button" onClick={() => void signOut()} className="btn-neon btn-neon-pink text-xs">
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="btn-neon btn-neon-cyan text-xs">
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
 
