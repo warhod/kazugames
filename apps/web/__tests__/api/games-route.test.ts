@@ -10,10 +10,12 @@ mock.module('@/lib/supabase/server', () => ({
 
 const scrapeGame = mock(() => Promise.resolve(null as null));
 const scrapeSearch = mock(() => Promise.resolve([] as never[]));
+const normalizeDekuUrl = mock((url: string) => url);
 
 mock.module('deku-scraper', () => ({
   scrapeGame,
   scrapeSearch,
+  normalizeDekuUrl,
 }));
 
 describe('GET /api/games', () => {
