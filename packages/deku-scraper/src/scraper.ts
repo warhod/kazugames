@@ -29,6 +29,11 @@ export async function scrapeGame(url: string): Promise<GameData | null> {
   }
 }
 
+/**
+ * Fetches `/search?q=…` and parses the HTML with Cheerio.
+ * DekuDeals includes the result grid in the initial response (not CSR-only); if the
+ * markup changes again, update `parseSearchResults` in `./parsers/search`.
+ */
 export async function scrapeSearch(query: string): Promise<SearchResult[]> {
   try {
     const searchUrl = `${DEKU_BASE_URL}/search?q=${encodeURIComponent(query)}`;

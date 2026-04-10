@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
-import CollectionGrid from '@/components/CollectionGrid';
-import SearchBar from '@/components/SearchBar';
-import type { GameCardProps } from '@/components/GameCard';
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import CollectionGrid from "@/components/CollectionGrid";
+import SearchBar from "@/components/SearchBar";
+import type { GameCardProps } from "@/components/GameCard";
+import { isDekuItemUrl } from "@/lib/is-deku-item-url";
 
 interface RawResult {
   id?: string;
@@ -24,13 +25,13 @@ function toGameCardProps(r: RawResult): GameCardProps {
     image_url: r.image_url,
     current_price: r.current_price,
     msrp: r.msrp ?? null,
-    platform: r.platform ?? 'Switch',
+    platform: r.platform ?? "Switch",
   };
 }
 
 function SearchContent() {
   const searchParams = useSearchParams();
-  const q = searchParams.get('q') ?? '';
+  const q = searchParams.get("q") ?? "";
 
   const [games, setGames] = useState<GameCardProps[]>([]);
   const [loading, setLoading] = useState(false);
@@ -56,7 +57,7 @@ function SearchContent() {
         if (!cancelled) setGames(data.map(toGameCardProps));
       })
       .catch((e) => {
-        if (!cancelled) setError(e.message ?? 'Search failed');
+        if (!cancelled) setError(e.message ?? "Search failed");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -75,16 +76,33 @@ function SearchContent() {
           <div>
             <h1
               className="text-3xl md:text-4xl font-black font-display uppercase tracking-tighter mb-1"
-              style={{ color: 'var(--accent)' }}
+              style={{ color: "var(--accent)" }}
             >
-              SEARCH
+              FIND GAMES
             </h1>
+            <p
+              className="text-sm max-w-xl mb-2"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Paste a DekuDeals item URL for the most reliable match. You can
+              try a title search below, but live results are often empty.
+            </p>
             {!loading && q && (
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                {games.length > 0
-                  ? `${games.length} result${games.length !== 1 ? 's' : ''} for "${q}"`
-                  : `No results for "${q}"`}
-              </p>
+              <div className="text-sm" style={{ color: "var(--text-muted)" }}>
+                <p>
+                  {games.length > 0
+                    ? `${games.length} result${games.length !== 1 ? "s" : ""} for "${q}"`
+                    : `No results for "${q}"`}
+                </p>
+                {games.length === 0 && !isDekuItemUrl(q) && (
+                  <p className="text-xs mt-2 max-w-md leading-relaxed">
+                    If you have the game open on DekuDeals, copy the page URL
+                    (it includes <code className="text-[11px]">/items/</code>)
+                    and use LOAD from the home search bar—or paste it here and
+                    submit to go to the item page.
+                  </p>
+                )}
+              </div>
             )}
           </div>
           <div className="w-full md:w-96">
@@ -97,9 +115,11 @@ function SearchContent() {
           <div
             className="mb-6 px-4 py-3 rounded-lg border text-sm font-display"
             style={{
-              background: 'color-mix(in srgb, var(--accent-secondary) 8%, transparent)',
-              borderColor: 'color-mix(in srgb, var(--accent-secondary) 30%, transparent)',
-              color: 'var(--accent-secondary)',
+              background:
+                "color-mix(in srgb, var(--accent-secondary) 8%, transparent)",
+              borderColor:
+                "color-mix(in srgb, var(--accent-secondary) 30%, transparent)",
+              color: "var(--accent-secondary)",
             }}
           >
             {error}
@@ -109,14 +129,26 @@ function SearchContent() {
         {/* Empty state — no query */}
         {!q.trim() && !loading && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="text-6xl mb-6 opacity-20" style={{ color: 'var(--accent)' }}>
+            <div
+              className="text-6xl mb-6 opacity-20"
+              style={{ color: "var(--accent)" }}
+            >
               <span className="font-display">⌕</span>
             </div>
-            <h3 className="font-display text-xl mb-2 tracking-widest" style={{ color: 'var(--accent)' }}>
-              ENTER A QUERY
+            <h3
+              className="font-display text-xl mb-2 tracking-widest"
+              style={{ color: "var(--accent)" }}
+            >
+              PASTE A DEKU ITEM LINK
             </h3>
-            <p className="text-sm max-w-xs mx-auto" style={{ color: 'var(--text-muted)' }}>
-              Type a game title or paste a DekuDeals URL above to scan the vault.
+            <p
+              className="text-sm max-w-sm mx-auto leading-relaxed"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Open a game on dekudeals.com, copy the URL from the address bar
+              (it should contain <code className="text-[11px]">/items/</code>),
+              and paste it in the field above—then press LOAD. You can try a
+              title search instead, but it may return no results.
             </p>
           </div>
         )}

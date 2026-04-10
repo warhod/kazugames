@@ -4,6 +4,13 @@ import { scrapeGame, scrapeSearch, normalizeDekuUrl } from 'deku-scraper';
 
 const STALE_MS = 24 * 60 * 60 * 1000;
 
+const SCRAPE_INCOMPLETE_MESSAGE =
+  'Could not read game details from DekuDeals (missing title). The page may have changed or content may not be available in the fetched HTML.';
+
+function isCompleteScrapedGame(data: { title: unknown }): boolean {
+  return typeof data.title === 'string' && data.title.trim().length > 0;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const url = searchParams.get('url');
@@ -43,6 +50,11 @@ async function handleUrlLookup(supabase: ReturnType<typeof createClient>, url: s
   if (!scraped) {
     if (cached) return NextResponse.json(cached);
     return NextResponse.json({ error: 'Failed to scrape game' }, { status: 502 });
+  }
+
+  if (!isCompleteScrapedGame(scraped)) {
+    if (cached) return NextResponse.json(cached);
+    return NextResponse.json({ error: SCRAPE_INCOMPLETE_MESSAGE }, { status: 502 });
   }
 
   const { data: game, error } = await supabase

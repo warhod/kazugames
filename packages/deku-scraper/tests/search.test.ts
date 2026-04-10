@@ -12,10 +12,15 @@ function loadSearchFixture(html: string, baseUrl: string = DEKU_BASE) {
 }
 
 let fixtureHtml: string;
+let browseGridFixtureHtml: string;
 
 beforeAll(() => {
   fixtureHtml = readFileSync(
     join(import.meta.dir, 'fixtures/search-zelda.html'),
+    'utf-8'
+  );
+  browseGridFixtureHtml = readFileSync(
+    join(import.meta.dir, 'fixtures/search-browse-grid.html'),
     'utf-8'
   );
 });
@@ -68,8 +73,24 @@ describe('parseSearchResults — fixture', () => {
   });
 });
 
+describe('parseSearchResults — browse grid fixture (live Deku layout)', () => {
+  test('extracts titles, URLs, images, and sale price from strong', () => {
+    const results = loadSearchFixture(browseGridFixtureHtml);
+    expect(results).toHaveLength(2);
+    const botw = results.find((r) => r.title.includes('Breath of the Wild'));
+    expect(botw?.deku_url).toBe(
+      'https://www.dekudeals.com/items/the-legend-of-zelda-breath-of-the-wild'
+    );
+    expect(botw?.image_url).toBe('https://cdn.dekudeals.com/images/botw.jpg');
+    expect(botw?.current_price).toBe(43.99);
+    const totk = results.find((r) => r.title.includes('Tears of the Kingdom'));
+    expect(totk?.current_price).toBe(69.99);
+    expect(totk?.image_url).toBe('https://cdn.dekudeals.com/images/totk.jpg');
+  });
+});
+
 describe('parseSearchResults — edge cases', () => {
-  test('returns empty array when grid has no cells', () => {
+  test('returns empty array when grid has no cells and no browse cards', () => {
     const html = '<div class="item-grid"></div>';
     expect(loadSearchFixture(html)).toEqual([]);
   });

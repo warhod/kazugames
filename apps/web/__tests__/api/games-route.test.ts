@@ -59,4 +59,55 @@ describe('GET /api/games', () => {
     expect(body).toHaveLength(1);
     expect(body[0].title).toBe('Hit');
   });
+
+  test('502 when scrape succeeds but title is empty and there is no cache', async () => {
+    currentMock = createQueuedSupabaseMock(null, [{ data: null, error: null }]);
+    scrapeGame.mockImplementation(() =>
+      Promise.resolve({
+        title: '',
+        deku_url: 'https://x/items/bad',
+        image_url: 'https://img.example/x.png',
+        current_price: null,
+        msrp: null,
+        description: null,
+        platform: 'Switch',
+      }),
+    );
+    const { GET } = await import('@/app/api/games/route');
+    const req = new NextRequest(
+      `http://localhost/api/games?url=${encodeURIComponent('https://x/items/bad')}`,
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(502);
+    const body = await res.json();
+    expect(body.error).toContain('missing title');
+  });
+
+  test('returns stale cache when scrape is incomplete so bad rows are not upserted', async () => {
+    const stale = {
+      id: '1',
+      deku_url: 'https://x/items/foo',
+      title: 'Cached Foo',
+      updated_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
+    };
+    currentMock = createQueuedSupabaseMock(null, [{ data: stale, error: null }]);
+    scrapeGame.mockImplementation(() =>
+      Promise.resolve({
+        title: '   ',
+        deku_url: stale.deku_url,
+        image_url: null,
+        current_price: null,
+        msrp: null,
+        description: null,
+        platform: 'Switch',
+      }),
+    );
+    const { GET } = await import('@/app/api/games/route');
+    const req = new NextRequest(
+      `http://localhost/api/games?url=${encodeURIComponent(stale.deku_url)}`,
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(stale);
+  });
 });
