@@ -11,6 +11,16 @@ default:
 dev:
     cd apps/web && bun run dev
 
+[group("development")]
+[doc("Delete apps/web/.next only — fixes dev MODULE_NOT_FOUND ./NN.js and stale *.hot-update.json 404s")]
+clean-next:
+    rm -rf apps/web/.next
+
+[group("development")]
+[doc("Remove apps/web/.next then start dev (use after next build or HMR / chunk errors)")]
+dev-clean: clean-next
+    cd apps/web && bun run dev
+
 [group("database")]
 [doc("Apply local migrations to the linked Supabase database")]
 db-push:
