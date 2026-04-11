@@ -32,13 +32,25 @@ const varelaRound = Varela_Round({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://kazu.deals'),
   title: {
-    template: '%s | CartridgeVault',
-    default: 'CartridgeVault — Track Your Game Collection',
+    template: '%s | KazuDeals',
+    default: 'KazuDeals — Switch collections & friend lending',
   },
   description:
-    'Track your Nintendo Switch game collection, find deals via DekuDeals, and share with friends. CartridgeVault is the cyberpunk-themed game tracker for you and your crew.',
-  keywords: ['nintendo switch', 'game collection', 'game tracker', 'deku deals', 'game deals'],
+    'Track your Nintendo Switch library with DekuDeals prices, build friend groups, and mark games as loanable. KazuDeals is a companion app for crews who lend cartridges and digital-friendly titles — not a DekuDeals replacement.',
+  keywords: [
+    'nintendo switch',
+    'game collection',
+    'game lending',
+    'friend group',
+    'deku deals',
+    'kazu deals',
+  ],
+  openGraph: {
+    siteName: 'KazuDeals',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

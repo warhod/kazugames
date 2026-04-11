@@ -49,7 +49,7 @@ export default function CollectionGrid({
           VAULT EMPTY
         </h3>
         <p className="text-sm max-w-xs mx-auto" style={{ color: 'var(--text-muted)' }}>
-          Your digital collection is currently offline. Search for titles to synchronize them with your vault.
+          Your digital collection is currently offline. Search for titles to synchronize them with your library.
         </p>
       </div>
     );

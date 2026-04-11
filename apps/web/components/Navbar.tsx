@@ -50,9 +50,9 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2 group">
           <span
             className="text-lg neon-text-cyan glitch-hover font-display"
-            data-text="CARTRIDGE"
+            data-text="KAZU"
           >
-            CARTRIDGE
+            KAZU
           </span>
           <span
             className="text-lg font-black font-display"
@@ -61,7 +61,7 @@ export default function Navbar() {
               textShadow: '0 0 8px var(--accent-secondary)',
             }}
           >
-            VAULT
+            DEALS
           </span>
         </Link>
 

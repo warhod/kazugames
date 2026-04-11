@@ -162,7 +162,7 @@ export default function CollectionPage() {
               COLLECTION
             </h1>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              {userGames.length} title{userGames.length !== 1 ? 's' : ''} in your vault
+              {userGames.length} title{userGames.length !== 1 ? 's' : ''} in your collection
             </p>
           </div>
 

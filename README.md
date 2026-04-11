@@ -2,6 +2,8 @@
 
 **KazuDeals** is a personalized game tracker and collection manager. It helps you keep track of your gaming library, monitor deals, and manage your collection with ease.
 
+**Production:** [kazu.deals](https://kazu.deals) (custom domain; deploy target for launch).
+
 ## Key Features
 
 - **Collection Tracking**: Keep a curated list of all your games across different platforms.

@@ -315,7 +315,7 @@ function GameContent() {
                           ADDING…
                         </span>
                       ) : (
-                        '+ ADD TO VAULT'
+                        '+ ADD TO COLLECTION'
                       )}
                     </button>
                   </div>

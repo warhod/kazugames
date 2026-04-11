@@ -3,9 +3,9 @@ import SearchBar from '@/components/SearchBar';
 import CollectionGrid from '@/components/CollectionGrid';
 
 export const metadata: Metadata = {
-  title: 'CartridgeVault — Track Your Game Collection',
+  title: 'KazuDeals — Switch collections & friend lending',
   description:
-    'Discover deals on Nintendo Switch games, track your collection and wishlist, and share with your friend group.',
+    'Discover Nintendo Switch games via DekuDeals prices, track your collection, and lend titles inside your friend group.',
 };
 
 const FEATURED_GAMES = [
@@ -101,7 +101,8 @@ export default function HomePage() {
         </h1>
 
         <p className="text-lg md:text-xl mb-10 max-w-xl mx-auto text-text-muted">
-          Your crew&apos;s Nintendo Switch game vault. Track collections, spot deals, and lend games to friends.
+          Your crew&apos;s Switch library on <span className="text-text-primary font-medium">kazu.deals</span>. Track
+          collections, spot DekuDeals prices, and lend games to friends.
         </p>
 
         {/* Search */}
