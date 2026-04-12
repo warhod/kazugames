@@ -76,6 +76,7 @@ function MainNavLink({
 export default function Navbar() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
+  const [navDisplayName, setNavDisplayName] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -86,6 +87,37 @@ export default function Navbar() {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setNavDisplayName(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((row: { display_name?: string | null } | null) => {
+        if (cancelled || !row) return;
+        const n = typeof row.display_name === "string" ? row.display_name.trim() : "";
+        setNavDisplayName(n.length > 0 ? n : null);
+      })
+      .catch(() => {
+        if (!cancelled) setNavDisplayName(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    const onProfileUpdated = (ev: Event) => {
+      const d = (ev as CustomEvent<{ display_name?: string | null }>).detail;
+      const n = typeof d?.display_name === "string" ? d.display_name.trim() : "";
+      setNavDisplayName(n.length > 0 ? n : null);
+    };
+    window.addEventListener("kazu:profile-updated", onProfileUpdated);
+    return () => window.removeEventListener("kazu:profile-updated", onProfileUpdated);
   }, []);
 
   const signOut = async () => {
@@ -142,14 +174,22 @@ export default function Navbar() {
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <ThemeToggle />
           {user ? (
-            <div className="flex items-center gap-3">
-              <span
-                className="hidden sm:inline max-w-[140px] truncate text-[10px] font-display"
-                style={{ color: "var(--text-muted)" }}
-                title={user.email ?? undefined}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link
+                href="/profile"
+                className="max-w-[7rem] sm:max-w-[12.5rem] truncate text-[10px] font-display tracking-wide sm:tracking-widest uppercase shrink text-right"
+                style={{ color: "var(--accent)" }}
+                title={
+                  navDisplayName && user.email
+                    ? `${navDisplayName} — ${user.email} (profile)`
+                    : user.email
+                      ? `${user.email} (profile)`
+                      : "Profile"
+                }
+                aria-label="Open profile"
               >
-                {user.email}
-              </span>
+                {navDisplayName ?? user.email ?? "Profile"}
+              </Link>
               <button
                 type="button"
                 onClick={() => void signOut()}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type {
   DbGroup,
   DbGameLoan,
@@ -224,12 +225,17 @@ export default function GroupPanel({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex flex-wrap items-center gap-2">
-                      <span
-                        className="font-display text-xs tracking-wide"
-                        style={{ color: 'var(--text-primary)' }}
+                      <Link
+                        href={`/profile/${encodeURIComponent(member.user_id)}`}
+                        className="font-display text-xs tracking-wide rounded-sm underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        style={{
+                          color: 'var(--text-primary)',
+                          outlineColor: 'var(--accent)',
+                        }}
+                        aria-label={`View ${primary === 'YOU' ? 'your' : `${primary}'s`} profile`}
                       >
                         {primary}
-                      </span>
+                      </Link>
                       {isSelf && member.profile.display_name?.trim() && (
                         <span
                           className="text-[10px] uppercase tracking-wider"
