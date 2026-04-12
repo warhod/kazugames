@@ -83,9 +83,9 @@ scraper-build:
     cd packages/deku-scraper && bun run build
 
 [group("deploy")]
-[doc("Deploy the web app to Vercel")]
+[doc("Deploy the web app to Vercel (apps/web; set Root Directory to apps/web in Vercel)")]
 deploy-web:
-    bunx vercel deploy
+    cd apps/web && bunx vercel deploy
 
 [group("deploy")]
 [doc("Deploy the deku-scraper package to Vercel")]

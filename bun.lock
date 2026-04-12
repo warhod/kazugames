@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "deku-tracker",
+      "dependencies": {
+        "next": "14.2.29",
+      },
     },
     "apps/web": {
       "name": "web",
