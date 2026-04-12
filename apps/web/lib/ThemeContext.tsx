@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'cyberpunk' | 'zelda' | 'animal-crossing';
+export type Theme = 'cyberpunk' | 'zelda' | 'animal-crossing';
 
 interface ThemeContextType {
   theme: Theme;

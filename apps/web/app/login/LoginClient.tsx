@@ -90,7 +90,7 @@ export default function LoginClient() {
   };
 
   return (
-    <div className="relative z-10 px-6 py-16 flex flex-col items-center min-h-[calc(100vh-4rem)]">
+    <div className="relative z-10 px-6 py-16 flex flex-col items-center min-h-[calc(100vh-7rem)] md:min-h-[calc(100vh-4rem)]">
       <div className="w-full max-w-md glass-card p-8">
         <h1
           className="text-2xl font-black font-display uppercase tracking-widest mb-2 text-center"

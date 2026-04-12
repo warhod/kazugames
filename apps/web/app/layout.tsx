@@ -63,7 +63,8 @@ export default function RootLayout({
       <body className="font-inter">
         <ThemeProvider>
           <Navbar />
-          <main className="relative z-10 min-h-screen pt-16">
+          {/* pt matches Navbar: h-16 + md:hidden subnav h-12 = 7rem below md */}
+          <main className="relative z-10 min-h-screen pt-28 md:pt-16">
             {children}
           </main>
         </ThemeProvider>
