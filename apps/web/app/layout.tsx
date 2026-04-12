@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     default: "Kazu Games — Switch collections & friend lending",
   },
   description:
-    "Track your Nintendo Switch library, build friend groups, and mark games as loanable. Kazu Games uses DekuDeals as a catalog source for titles and prices — a companion for crews who share games, not a deal-hunting app.",
+    "Track your Nintendo Switch library, build friend groups, and mark games as lendable. Kazu Games uses DekuDeals as a catalog source for titles and prices — a companion for crews who share games, not a deal-hunting app.",
   keywords: [
     "nintendo switch",
     "game collection",

@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
   const { data: userGame } = await supabase
     .from('user_games')
-    .select('id, loanable')
+    .select('id, lendable')
     .eq('user_id', owner_id)
     .eq('game_id', game_id)
     .single();
@@ -88,8 +88,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Owner does not have this game' }, { status: 404 });
   }
 
-  if (!userGame.loanable) {
-    return NextResponse.json({ error: 'This game is not marked as loanable' }, { status: 400 });
+  if (!userGame.lendable) {
+    return NextResponse.json({ error: 'This game is not marked as lendable' }, { status: 400 });
   }
 
   const { data: activeLoan } = await supabase

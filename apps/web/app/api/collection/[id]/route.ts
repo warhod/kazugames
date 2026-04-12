@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import type { GameStatus } from '@/lib/database.types';
-import { loanableForStatus } from '@/lib/collection-lending';
+import { lendableForStatus } from '@/lib/collection-lending';
 
 export async function PATCH(
   request: NextRequest,
@@ -13,13 +13,13 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json() as { status?: GameStatus; loanable?: boolean };
+  const body = await request.json() as { status?: GameStatus; lendable?: boolean };
 
   const hasStatus = body.status !== undefined;
-  const hasLoanable = body.loanable !== undefined;
-  if (!hasStatus && !hasLoanable) {
+  const hasLendable = body.lendable !== undefined;
+  if (!hasStatus && !hasLendable) {
     return NextResponse.json(
-      { error: 'Provide at least one field to update (status, loanable)' },
+      { error: 'Provide at least one field to update (status, lendable)' },
       { status: 400 },
     );
   }
@@ -47,7 +47,7 @@ export async function PATCH(
 
   const newStatus: GameStatus = hasStatus ? body.status! : existing.status;
   const updates: Record<string, unknown> = {
-    loanable: loanableForStatus(newStatus),
+    lendable: lendableForStatus(newStatus),
   };
   if (hasStatus) {
     updates.status = newStatus;

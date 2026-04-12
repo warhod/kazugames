@@ -48,7 +48,7 @@ describe('PATCH /api/collection/[id]', () => {
   });
 
   test('200 on status update', async () => {
-    const updated = { id: 'ug-1', status: 'playing', loanable: false, game: {} };
+    const updated = { id: 'ug-1', status: 'playing', lendable: false, game: {} };
     currentMock = createQueuedSupabaseMock(
       { id: 'u1' },
       [
@@ -77,7 +77,7 @@ describe('PATCH /api/collection/[id]', () => {
     const { PATCH } = await import('@/app/api/collection/[id]/route');
     const req = new NextRequest('http://localhost/api/collection/ug-1', {
       method: 'PATCH',
-      body: JSON.stringify({ loanable: true }),
+      body: JSON.stringify({ lendable: true }),
       headers: { 'content-type': 'application/json' },
     });
     const res = await PATCH(req, { params });

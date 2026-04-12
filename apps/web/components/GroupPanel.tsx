@@ -5,14 +5,14 @@ import type {
   DbGroup,
   DbGameLoan,
   DbGroupMemberView,
-  DbLoanableGameRow,
+  DbLendableGameRow,
   DbPublicProfile,
 } from '@/lib/database.types';
 import GameCard from './GameCard';
 
 interface GroupDetail extends DbGroup {
   members: DbGroupMemberView[];
-  loanable_games: DbLoanableGameRow[];
+  lendable_games: DbLendableGameRow[];
 }
 
 interface GroupPanelProps {
@@ -32,19 +32,34 @@ function displayNameForMember(
   profile: DbPublicProfile,
   userId: string,
   currentUserId: string | undefined,
-  isGroupOwner: boolean,
 ) {
   const name = profile.display_name?.trim();
   if (name) return name;
   if (userId === currentUserId) return 'YOU';
-  if (isGroupOwner) return 'OWNER';
+  const hint = profile.account_hint?.trim();
+  if (hint) return hint;
   return shortUserId(userId);
 }
 
 function ownerLabel(profile: DbPublicProfile, ownerUserId: string) {
   const name = profile.display_name?.trim();
   if (name) return name;
+  const hint = profile.account_hint?.trim();
+  if (hint) return hint;
   return shortUserId(ownerUserId);
+}
+
+function buildGroupInviteShareUrl(groupId: string, inviteCode: string) {
+  if (typeof window === 'undefined') return '';
+  const u = new URL(`${window.location.origin}/groups`);
+  u.searchParams.set('join', groupId);
+  u.hash = `invite=${encodeURIComponent(inviteCode)}`;
+  return u.href;
+}
+
+function buildInviteShareClipboardText(groupName: string, groupId: string, inviteCode: string) {
+  const link = buildGroupInviteShareUrl(groupId, inviteCode);
+  return `Join my group "${groupName}" on Kazu Games — open this link while signed in, then confirm Join:\n\n${link}`;
 }
 
 function safeHttpsUrl(url: string | null): string | null {
@@ -73,9 +88,10 @@ export default function GroupPanel({
 
   const copyInviteCode = async () => {
     try {
-      await navigator.clipboard.writeText(group.invite_code);
+      const text = buildInviteShareClipboardText(group.name, group.id, group.invite_code);
+      await navigator.clipboard.writeText(text);
       setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 2000);
+      setTimeout(() => setCopiedCode(false), 2800);
     } catch {
       setShowInviteCode(true);
     }
@@ -122,11 +138,12 @@ export default function GroupPanel({
 
         <div className="flex items-center gap-2 shrink-0">
           <button
+            type="button"
             onClick={copyInviteCode}
-            className="btn-neon btn-neon-cyan text-[10px] px-3 py-1.5"
-            title="Copy invite code"
+            className="btn-neon btn-neon-cyan text-[10px] px-3 py-1.5 max-w-[11rem] leading-tight whitespace-normal text-center"
+            title="Copy invite message and link for your friends"
           >
-            {copiedCode ? 'COPIED!' : 'INVITE'}
+            {copiedCode ? 'Invite code copied' : 'INVITE'}
           </button>
           {isOwner && onDeleteGroup && (
             <button
@@ -177,12 +194,7 @@ export default function GroupPanel({
           {group.members.map((member) => {
             const isSelf = member.user_id === currentUserId;
             const isMemberOwner = member.user_id === group.owner_id;
-            const primary = displayNameForMember(
-              member.profile,
-              member.user_id,
-              currentUserId,
-              isMemberOwner,
-            );
+            const primary = displayNameForMember(member.profile, member.user_id, currentUserId);
             const friend = member.profile.friend_code?.trim() || null;
             const nintendoUrl = safeHttpsUrl(member.profile.nintendo_profile_url);
 
@@ -275,22 +287,22 @@ export default function GroupPanel({
         </ul>
       </div>
 
-      {/* Loanable Games */}
+      {/* Lendable games */}
       <div className="px-5 py-4">
         <h4
           className="text-[10px] font-display tracking-[0.2em] uppercase mb-3"
           style={{ color: 'var(--text-muted)' }}
         >
-          AVAILABLE TO BORROW ({group.loanable_games.length})
+          AVAILABLE TO BORROW ({group.lendable_games.length})
         </h4>
 
-        {group.loanable_games.length === 0 ? (
+        {group.lendable_games.length === 0 ? (
           <p className="text-xs py-6 text-center" style={{ color: 'var(--text-muted)' }}>
             {`No games available to borrow yet. Owned, completed, or dropped titles in a member's collection appear here for the group.`}
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {group.loanable_games.map((ug) => {
+            {group.lendable_games.map((ug) => {
               const alreadyLoaned = hasActiveLoan(ug.game_id, ug.user_id);
               const isSelf = ug.user_id === currentUserId;
               return (

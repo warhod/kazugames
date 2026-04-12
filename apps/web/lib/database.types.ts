@@ -19,7 +19,7 @@ export interface DbUserGame {
   user_id: string;
   game_id: string;
   status: GameStatus;
-  loanable: boolean;
+  lendable: boolean;
   created_at: string;
   game?: DbGame;
 }
@@ -54,6 +54,8 @@ export interface DbGameLoan {
 /** Fields from `profiles` exposed to groupmates via the groups API. */
 export interface DbPublicProfile {
   display_name: string | null;
+  /** Local-part of signup email when display_name is unset (group lists). */
+  account_hint: string | null;
   friend_code: string | null;
   nintendo_profile_url: string | null;
 }
@@ -70,12 +72,12 @@ export interface DbProfileRow extends DbPublicProfile {
   updated_at: string;
 }
 
-export interface DbLoanableGameRow {
+export interface DbLendableGameRow {
   id: string;
   user_id: string;
   game_id: string;
   status: GameStatus;
-  loanable: boolean;
+  lendable: boolean;
   game: DbGame;
   owner_profile: DbPublicProfile;
 }

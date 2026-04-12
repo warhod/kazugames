@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { loanableForStatus } from "@/lib/collection-lending";
+import { lendableForStatus } from "@/lib/collection-lending";
 
 export type GameStatus =
   | "owned"
@@ -157,7 +157,7 @@ export default function GameCard({
             <span className={`badge-status ${statusCfg.className}`}>
               {statusCfg.icon} {statusCfg.label}
             </span>
-            {status && loanableForStatus(status) && (
+            {status && lendableForStatus(status) && (
               <span className="badge-status badge-lendable">
                 🤲 Lendable
               </span>

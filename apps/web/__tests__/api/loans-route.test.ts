@@ -81,7 +81,7 @@ describe('POST /api/loans', () => {
       [
         { data: { id: 'm1' }, error: null },
         { data: { id: 'm2' }, error: null },
-        { data: { id: 'ug1', loanable: true }, error: null },
+        { data: { id: 'ug1', lendable: true }, error: null },
         { data: null, error: null },
         { data: created, error: null },
       ],

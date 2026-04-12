@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { loanableForStatus } from "@/lib/collection-lending";
+import { lendableForStatus } from "@/lib/collection-lending";
 import { ensureGameByDekuUrl } from "@/lib/ensure-game-from-deku-url";
 import { mapDekuImportHintToGameStatus } from "@/lib/collection-import-status";
 import {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       user_id: user.id,
       game_id: gameResult.id,
       status,
-      loanable: loanableForStatus(status),
+      lendable: lendableForStatus(status),
     });
 
     if (insertError) {

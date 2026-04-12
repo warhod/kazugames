@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { DbGroup, DbGameLoan, DbGroupMemberView, DbLoanableGameRow } from '@/lib/database.types';
+import type { DbGroup, DbGameLoan, DbGroupMemberView, DbLendableGameRow } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/client';
 import GroupPanel from '@/components/GroupPanel';
 
 type GroupDetail = DbGroup & {
   members: DbGroupMemberView[];
-  loanable_games: DbLoanableGameRow[];
+  lendable_games: DbLendableGameRow[];
 };
 
 type Tab = 'my-groups' | 'join';
@@ -83,6 +83,30 @@ export default function GroupsPage() {
   useEffect(() => {
     fetchGroups();
   }, [fetchGroups]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const join = params.get('join')?.trim() ?? '';
+    const rawHash = window.location.hash.replace(/^#/, '');
+    const inviteMatch = rawHash.match(/^invite=(.*)$/);
+    const inviteEncoded = inviteMatch?.[1];
+    let invite = '';
+    if (inviteEncoded) {
+      try {
+        invite = decodeURIComponent(inviteEncoded);
+      } catch {
+        invite = inviteEncoded;
+      }
+    }
+
+    if (!join && !invite) return;
+
+    if (join) setJoinGroupId(join);
+    if (invite) setJoinInviteCode(invite);
+    setTab('join');
+  }, []);
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -392,7 +416,8 @@ export default function GroupsPage() {
                 JOIN GROUP
               </h3>
               <p className="text-xs mb-5" style={{ color: 'var(--text-muted)' }}>
-                Got an invite? Enter the group ID and code to join.
+                Got an invite? Paste the group ID and code, or open an invite link from a friend to fill
+                this in automatically.
               </p>
 
               <form onSubmit={handleJoinGroup} className="space-y-4">

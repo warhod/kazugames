@@ -21,7 +21,7 @@ describe('GET /api/groups/[id]', () => {
     expect(res.status).toBe(403);
   });
 
-  test('200 returns group payload with profiles on members and loanable rows', async () => {
+  test('200 returns group payload with profiles on members and lendable rows', async () => {
     const group = {
       id: 'grp-1',
       name: 'Squad',
@@ -45,13 +45,13 @@ describe('GET /api/groups/[id]', () => {
       created_at: '2024-01-01T00:00:00.000Z',
       updated_at: '2024-01-01T00:00:00.000Z',
     };
-    const loanable = [
+    const lendableGames = [
       {
         id: 'ug1',
         user_id: 'u2',
         game_id: 'g1',
         status: 'owned',
-        loanable: true,
+        lendable: true,
         created_at: '2024-01-01T00:00:00.000Z',
         game,
       },
@@ -60,12 +60,14 @@ describe('GET /api/groups/[id]', () => {
       {
         user_id: 'u1',
         display_name: 'Alex',
+        account_hint: null,
         friend_code: 'SW-0000-0000-0001',
         nintendo_profile_url: null,
       },
       {
         user_id: 'u2',
         display_name: 'Sam',
+        account_hint: null,
         friend_code: null,
         nintendo_profile_url: 'https://accounts.nintendo.com/',
       },
@@ -76,7 +78,7 @@ describe('GET /api/groups/[id]', () => {
         { data: { id: 'mem' }, error: null },
         { data: group, error: null },
         { data: members, error: null },
-        { data: loanable, error: null },
+        { data: lendableGames, error: null },
         { data: profiles, error: null },
       ],
     );
@@ -91,6 +93,7 @@ describe('GET /api/groups/[id]', () => {
         joined_at: '2024-01-01T00:00:00.000Z',
         profile: {
           display_name: 'Alex',
+          account_hint: null,
           friend_code: 'SW-0000-0000-0001',
           nintendo_profile_url: null,
         },
@@ -100,18 +103,20 @@ describe('GET /api/groups/[id]', () => {
         joined_at: '2024-01-02T00:00:00.000Z',
         profile: {
           display_name: 'Sam',
+          account_hint: null,
           friend_code: null,
           nintendo_profile_url: 'https://accounts.nintendo.com/',
         },
       },
     ]);
-    expect(body.loanable_games).toHaveLength(1);
-    expect(body.loanable_games[0].owner_profile).toEqual({
+    expect(body.lendable_games).toHaveLength(1);
+    expect(body.lendable_games[0].owner_profile).toEqual({
       display_name: 'Sam',
+      account_hint: null,
       friend_code: null,
       nintendo_profile_url: 'https://accounts.nintendo.com/',
     });
-    expect(body.loanable_games[0].game.title).toBe('Test Game');
+    expect(body.lendable_games[0].game.title).toBe('Test Game');
   });
 });
 

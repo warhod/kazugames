@@ -26,7 +26,7 @@ describe('GET /api/collection/lookup', () => {
   });
 
   test('returns entry when row exists', async () => {
-    const entry = { id: 'ug1', status: 'playing', loanable: true };
+    const entry = { id: 'ug1', status: 'playing', lendable: true };
     currentMock = createQueuedSupabaseMock({ id: 'u1' }, [{ data: entry, error: null }]);
     const { GET } = await import('@/app/api/collection/lookup/route');
     const req = new NextRequest('http://localhost/api/collection/lookup?game_id=g99');

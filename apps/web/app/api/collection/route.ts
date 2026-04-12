@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { GameStatus } from "@/lib/database.types";
-import { loanableForStatus } from "@/lib/collection-lending";
+import { lendableForStatus } from "@/lib/collection-lending";
 
 const GAME_STATUSES: GameStatus[] = [
   "owned",
@@ -34,27 +34,32 @@ function parseFilter(raw: string | null): CollectionFilter {
   return "all";
 }
 
+/** Head-count rows; `narrow` uses `any` because Supabase’s builder generics disagree across `.select()`/`.eq()` and recurse deeply. */
 async function countUserGames(
   supabase: ReturnType<typeof createClient>,
   userId: string,
-  filter: (q: ReturnType<ReturnType<typeof createClient>["from"]>) => unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- postgrest filter vs query builder types
+  narrow: (q: any) => any,
 ): Promise<number> {
-  let q = supabase
-    .from("user_games")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId);
-  q = filter(q) as typeof q;
+  const q = narrow(
+    supabase
+      .from("user_games")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId),
+  );
   const { count, error } = await q;
   if (error) throw new Error(error.message);
   return count ?? 0;
 }
 
-function applyListFilter<
-  Q extends ReturnType<ReturnType<typeof createClient>["from"]>,
->(q: Q, filter: CollectionFilter): Q {
+function applyListFilter(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same builder generic issue as countUserGames
+  q: any,
+  filter: CollectionFilter,
+) {
   if (filter === "all") return q;
-  if (filter === "lendable") return q.eq("loanable", true) as Q;
-  return q.eq("status", filter) as Q;
+  if (filter === "lendable") return q.eq("lendable", true);
+  return q.eq("status", filter);
 }
 
 export async function GET(request: NextRequest) {
@@ -87,7 +92,7 @@ export async function GET(request: NextRequest) {
       countUserGames(supabase, user.id, (q) => q.eq("status", "playing")),
       countUserGames(supabase, user.id, (q) => q.eq("status", "completed")),
       countUserGames(supabase, user.id, (q) => q.eq("status", "abandoned")),
-      countUserGames(supabase, user.id, (q) => q.eq("loanable", true)),
+      countUserGames(supabase, user.id, (q) => q.eq("lendable", true)),
     ]);
 
     const status_counts: Record<GameStatus, number> = {
@@ -187,7 +192,7 @@ export async function POST(request: NextRequest) {
       user_id: user.id,
       game_id,
       status,
-      loanable: loanableForStatus(status),
+      lendable: lendableForStatus(status),
     })
     .select("*, game:games(*)")
     .single();

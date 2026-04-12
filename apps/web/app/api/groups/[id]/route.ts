@@ -2,21 +2,29 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import type { DbPublicProfile } from '@/lib/database.types';
 
-const PROFILE_FIELDS = 'user_id, display_name, friend_code, nintendo_profile_url' as const;
+const PROFILE_FIELDS =
+  'user_id, display_name, account_hint, friend_code, nintendo_profile_url' as const;
 
 type ProfileRow = {
   user_id: string;
   display_name: string | null;
+  account_hint: string | null;
   friend_code: string | null;
   nintendo_profile_url: string | null;
 };
 
 function toPublicProfile(row: ProfileRow | undefined): DbPublicProfile {
   if (!row) {
-    return { display_name: null, friend_code: null, nintendo_profile_url: null };
+    return {
+      display_name: null,
+      account_hint: null,
+      friend_code: null,
+      nintendo_profile_url: null,
+    };
   }
   return {
     display_name: row.display_name,
+    account_hint: row.account_hint,
     friend_code: row.friend_code,
     nintendo_profile_url: row.nintendo_profile_url,
   };
@@ -60,11 +68,11 @@ export async function GET(
 
   const memberIds = (members ?? []).map((m) => m.user_id);
 
-  const { data: loanableGames } = await supabase
+  const { data: lendableGames } = await supabase
     .from('user_games')
     .select('*, game:games(*)')
     .in('user_id', memberIds.length > 0 ? memberIds : ['__none__'])
-    .eq('loanable', true);
+    .eq('lendable', true);
 
   let profileRows: ProfileRow[] = [];
   if (memberIds.length > 0) {
@@ -83,7 +91,7 @@ export async function GET(
     profile: toPublicProfile(profileByUserId.get(m.user_id)),
   }));
 
-  const loanableWithOwners = (loanableGames ?? []).map((ug: { user_id: string }) => ({
+  const lendableWithOwners = (lendableGames ?? []).map((ug: { user_id: string }) => ({
     ...ug,
     owner_profile: toPublicProfile(profileByUserId.get(ug.user_id)),
   }));
@@ -91,7 +99,7 @@ export async function GET(
   return NextResponse.json({
     ...group,
     members: membersWithProfiles,
-    loanable_games: loanableWithOwners,
+    lendable_games: lendableWithOwners,
   });
 }
 

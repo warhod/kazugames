@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { DbGame, DbUserGame, GameStatus } from '@/lib/database.types';
 
-type CollectionEntry = Pick<DbUserGame, 'id' | 'status' | 'loanable'>;
+type CollectionEntry = Pick<DbUserGame, 'id' | 'status' | 'lendable'>;
 
 const STATUSES: { value: GameStatus; label: string; icon: string }[] = [
   { value: 'owned',     label: 'Owned',     icon: '✓' },
@@ -169,7 +169,7 @@ function GameContent() {
       setCollectionEntry({
         id: row.id,
         status: row.status,
-        loanable: row.loanable,
+        lendable: row.lendable,
       });
     } catch (e) {
       setCollectionErr(e instanceof Error ? e.message : 'Something went wrong');
@@ -204,7 +204,7 @@ function GameContent() {
       setCollectionEntry({
         id: updated.id,
         status: updated.status,
-        loanable: updated.loanable,
+        lendable: updated.lendable,
       });
     } catch (e) {
       setSelectedStatus(collectionEntry.status);

@@ -185,7 +185,7 @@ export default function HomePage() {
               {
                 step: "03",
                 title: "LEND & BORROW",
-                desc: "Mark games as loanable. Friends can request to borrow — you approve or decline.",
+                desc: "Mark games as lendable. Friends can request to borrow — you approve or decline.",
               },
             ].map((item) => (
               <div key={item.step} className="glass-card p-6 text-center">
