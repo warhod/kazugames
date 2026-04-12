@@ -1,5 +1,6 @@
 'use client';
 
+import { collectionImportCopy } from '@/lib/collection-import-copy';
 import GameCard, { type GameCardProps } from './GameCard';
 
 interface CollectionGridProps {
@@ -51,9 +52,14 @@ export default function CollectionGrid({
         <h3 className="font-display text-xl mb-2 tracking-widest" style={{ color: 'var(--accent)' }}>
           VAULT EMPTY
         </h3>
-        <p className="text-sm max-w-xs mx-auto" style={{ color: 'var(--text-muted)' }}>
-          Your digital collection is currently offline. Search for titles to synchronize them with your library.
-        </p>
+        <div
+          className="text-sm max-w-md mx-auto space-y-3"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          <p>{collectionImportCopy.emptyVaultPrimary}</p>
+          <p>{collectionImportCopy.mergeIntoSingleLibrary}</p>
+          <p>{collectionImportCopy.reimportSkipsExisting}</p>
+        </div>
       </div>
     );
   }
