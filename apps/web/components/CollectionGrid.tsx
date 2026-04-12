@@ -6,6 +6,8 @@ interface CollectionGridProps {
   games: GameCardProps[];
   showStatus?: boolean;
   loading?: boolean;
+  /** Passed through to each `GameCard` (e.g. `EDIT / REMOVE` on /collection). */
+  primaryLinkLabel?: string;
 }
 
 function SkeletonCard() {
@@ -25,6 +27,7 @@ export default function CollectionGrid({
   games,
   showStatus = false,
   loading = false,
+  primaryLinkLabel,
 }: CollectionGridProps) {
   if (loading) {
     return (
@@ -58,7 +61,12 @@ export default function CollectionGrid({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {games.map((game) => (
-        <GameCard key={game.id} {...game} showStatus={showStatus} />
+        <GameCard
+          key={game.id}
+          {...game}
+          showStatus={showStatus}
+          primaryLinkLabel={primaryLinkLabel}
+        />
       ))}
     </div>
   );

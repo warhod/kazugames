@@ -1,34 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import type { DbGroup, DbGameLoan } from '@/lib/database.types';
+import type {
+  DbGroup,
+  DbGameLoan,
+  DbGroupMemberView,
+  DbLoanableGameRow,
+  DbPublicProfile,
+} from '@/lib/database.types';
 import GameCard from './GameCard';
 
-interface GroupMember {
-  user_id: string;
-  joined_at: string;
-}
-
-interface LoanableGame {
-  id: string;
-  user_id: string;
-  game_id: string;
-  status: string;
-  loanable: boolean;
-  game: {
-    id: string;
-    title: string;
-    deku_url: string;
-    image_url: string | null;
-    current_price: number | null;
-    msrp: number | null;
-    platform: string;
-  };
-}
-
 interface GroupDetail extends DbGroup {
-  members: GroupMember[];
-  loanable_games: LoanableGame[];
+  members: DbGroupMemberView[];
+  loanable_games: DbLoanableGameRow[];
 }
 
 interface GroupPanelProps {
@@ -38,6 +22,40 @@ interface GroupPanelProps {
   onRequestLoan?: (gameId: string, ownerId: string, groupId: string) => void;
   onDeleteGroup?: (groupId: string) => void;
   onRemoveMember?: (groupId: string, userId: string) => void;
+}
+
+function shortUserId(userId: string) {
+  return userId.slice(0, 8).toUpperCase();
+}
+
+function displayNameForMember(
+  profile: DbPublicProfile,
+  userId: string,
+  currentUserId: string | undefined,
+  isGroupOwner: boolean,
+) {
+  const name = profile.display_name?.trim();
+  if (name) return name;
+  if (userId === currentUserId) return 'YOU';
+  if (isGroupOwner) return 'OWNER';
+  return shortUserId(userId);
+}
+
+function ownerLabel(profile: DbPublicProfile, ownerUserId: string) {
+  const name = profile.display_name?.trim();
+  if (name) return name;
+  return shortUserId(ownerUserId);
+}
+
+function safeHttpsUrl(url: string | null): string | null {
+  const u = url?.trim();
+  if (!u) return null;
+  try {
+    const parsed = new URL(u);
+    return parsed.protocol === 'https:' ? parsed.href : null;
+  } catch {
+    return null;
+  }
 }
 
 export default function GroupPanel({
@@ -50,6 +68,7 @@ export default function GroupPanel({
 }: GroupPanelProps) {
   const [showInviteCode, setShowInviteCode] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedFriendFor, setCopiedFriendFor] = useState<string | null>(null);
   const isOwner = currentUserId === group.owner_id;
 
   const copyInviteCode = async () => {
@@ -59,6 +78,16 @@ export default function GroupPanel({
       setTimeout(() => setCopiedCode(false), 2000);
     } catch {
       setShowInviteCode(true);
+    }
+  };
+
+  const copyFriendCode = async (userId: string, code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedFriendFor(userId);
+      setTimeout(() => setCopiedFriendFor(null), 2000);
+    } catch {
+      // ignore
     }
   };
 
@@ -144,49 +173,106 @@ export default function GroupPanel({
         >
           MEMBERS
         </h4>
-        <div className="flex flex-wrap gap-2">
+        <ul className="space-y-2">
           {group.members.map((member) => {
             const isSelf = member.user_id === currentUserId;
             const isMemberOwner = member.user_id === group.owner_id;
+            const primary = displayNameForMember(
+              member.profile,
+              member.user_id,
+              currentUserId,
+              isMemberOwner,
+            );
+            const friend = member.profile.friend_code?.trim() || null;
+            const nintendoUrl = safeHttpsUrl(member.profile.nintendo_profile_url);
+
             return (
-              <div
+              <li
                 key={member.user_id}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs border"
+                className="flex items-start gap-3 rounded-lg border px-3 py-2.5"
                 style={{
                   borderColor: isMemberOwner
                     ? 'var(--accent)'
                     : 'var(--border-subtle)',
                   background: 'var(--bg-elevated)',
-                  color: isMemberOwner ? 'var(--accent)' : 'var(--text-primary)',
                 }}
               >
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                <span
+                  className="mt-0.5 w-7 h-7 rounded-full flex shrink-0 items-center justify-center text-xs font-bold"
                   style={{
                     background: isMemberOwner
-                      ? 'color-mix(in srgb, var(--accent) 20%, transparent)'
+                      ? 'color-mix(in srgb, var(--accent) 22%, transparent)'
                       : 'var(--bg-surface)',
-                    color: 'var(--text-muted)',
+                    color: isMemberOwner ? 'var(--accent)' : 'var(--text-muted)',
                   }}
+                  aria-hidden
                 >
                   {isMemberOwner ? '★' : '●'}
                 </span>
-                <span className="font-display text-[10px] tracking-wider">
-                  {isSelf ? 'YOU' : member.user_id.slice(0, 8).toUpperCase()}
-                </span>
-                {isOwner && !isSelf && onRemoveMember && (
-                  <button
-                    onClick={() => onRemoveMember(group.id, member.user_id)}
-                    className="ml-1 w-4 h-4 flex items-center justify-center rounded-full text-[8px] hover:opacity-100 opacity-50 transition-opacity"
-                    style={{ color: 'var(--accent-secondary)' }}
-                    title="Remove member"
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex flex-wrap items-center gap-2">
+                      <span
+                        className="font-display text-xs tracking-wide"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        {primary}
+                      </span>
+                      {isSelf && member.profile.display_name?.trim() && (
+                        <span
+                          className="text-[10px] uppercase tracking-wider"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          (you)
+                        </span>
+                      )}
+                    </div>
+                    {isOwner && !isSelf && onRemoveMember && (
+                      <button
+                        onClick={() => onRemoveMember(group.id, member.user_id)}
+                        className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-[10px] hover:opacity-100 opacity-60 transition-opacity"
+                        style={{ color: 'var(--accent-secondary)' }}
+                        title="Remove member"
+                        type="button"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]"
+                    style={{ color: 'var(--text-muted)' }}
                   >
-                    ✕
-                  </button>
-                )}
-              </div>
+                    {friend && (
+                      <span className="inline-flex items-center gap-1.5 font-mono">
+                        {friend}
+                        <button
+                          type="button"
+                          onClick={() => copyFriendCode(member.user_id, friend)}
+                          className="uppercase tracking-wider underline-offset-2 hover:underline"
+                          style={{ color: 'var(--accent)' }}
+                        >
+                          {copiedFriendFor === member.user_id ? 'Copied' : 'Copy'}
+                        </button>
+                      </span>
+                    )}
+                    {nintendoUrl && (
+                      <a
+                        href={nintendoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 uppercase tracking-wider"
+                        style={{ color: 'var(--accent-secondary)' }}
+                      >
+                        <span aria-hidden>↗</span> Nintendo
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
 
       {/* Loanable Games */}
@@ -200,7 +286,7 @@ export default function GroupPanel({
 
         {group.loanable_games.length === 0 ? (
           <p className="text-xs py-6 text-center" style={{ color: 'var(--text-muted)' }}>
-            No games marked as loanable yet. Members can toggle lending in their collection.
+            {`No games available to borrow yet. Owned, completed, or dropped titles in a member's collection appear here for the group.`}
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -208,27 +294,43 @@ export default function GroupPanel({
               const alreadyLoaned = hasActiveLoan(ug.game_id, ug.user_id);
               const isSelf = ug.user_id === currentUserId;
               return (
-                <div key={ug.id} className="relative">
-                  <GameCard
-                    id={ug.game.id}
-                    title={ug.game.title}
-                    deku_url={ug.game.deku_url}
-                    image_url={ug.game.image_url}
-                    current_price={ug.game.current_price}
-                    msrp={ug.game.msrp}
-                    platform={ug.game.platform}
-                  />
-                  {!isSelf && onRequestLoan && (
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <button
-                        onClick={() => onRequestLoan(ug.game_id, ug.user_id, group.id)}
-                        disabled={alreadyLoaned}
-                        className="btn-neon btn-neon-solid w-full text-[10px] py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {alreadyLoaned ? 'LOAN PENDING' : 'REQUEST BORROW'}
-                      </button>
-                    </div>
-                  )}
+                <div key={ug.id} className="flex flex-col gap-2 min-w-0">
+                  <div
+                    className="inline-flex items-center gap-1.5 self-start rounded-full border px-2.5 py-1 text-[10px] font-display tracking-wider uppercase"
+                    style={{
+                      borderColor: 'var(--border-subtle)',
+                      background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    <span style={{ color: 'var(--text-muted)' }}>Owner</span>
+                    <span className="font-semibold" style={{ color: 'var(--accent)' }}>
+                      {ownerLabel(ug.owner_profile, ug.user_id)}
+                    </span>
+                  </div>
+                  <div className="relative min-w-0">
+                    <GameCard
+                      id={ug.game.id}
+                      title={ug.game.title}
+                      deku_url={ug.game.deku_url}
+                      image_url={ug.game.image_url}
+                      current_price={ug.game.current_price}
+                      msrp={ug.game.msrp}
+                      platform={ug.game.platform}
+                    />
+                    {!isSelf && onRequestLoan && (
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <button
+                          type="button"
+                          onClick={() => onRequestLoan(ug.game_id, ug.user_id, group.id)}
+                          disabled={alreadyLoaned}
+                          className="btn-neon btn-neon-solid w-full text-[10px] py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {alreadyLoaned ? 'LOAN PENDING' : 'REQUEST BORROW'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}

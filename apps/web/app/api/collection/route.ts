@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import type { GameStatus } from '@/lib/database.types';
+import { loanableForStatus } from '@/lib/collection-lending';
 
 export async function GET() {
   const supabase = createClient();
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from('user_games')
-    .insert({ user_id: user.id, game_id, status, loanable: false })
+    .insert({ user_id: user.id, game_id, status, loanable: loanableForStatus(status) })
     .select('*, game:games(*)')
     .single();
 

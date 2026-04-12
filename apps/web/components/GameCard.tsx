@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import { loanableForStatus } from "@/lib/collection-lending";
 
-export type GameStatus = 'owned' | 'wishlist' | 'playing' | 'completed' | 'abandoned';
+export type GameStatus =
+  | "owned"
+  | "wishlist"
+  | "playing"
+  | "completed"
+  | "abandoned";
 
 export interface GameCardProps {
   id: string;
@@ -16,14 +22,19 @@ export interface GameCardProps {
   platform: string;
   status?: GameStatus;
   showStatus?: boolean;
+  /** Main link to `/game?...`. Default fits search / featured / borrow contexts. */
+  primaryLinkLabel?: string;
 }
 
-const STATUS_CONFIG: Record<GameStatus, { label: string; className: string; icon: string }> = {
-  owned:     { label: 'Owned',     className: 'badge-owned',     icon: '✓' },
-  wishlist:  { label: 'Wishlist',  className: 'badge-wishlist',  icon: '♥' },
-  playing:   { label: 'Playing',   className: 'badge-playing',   icon: '▶' },
-  completed: { label: 'Completed', className: 'badge-completed', icon: '★' },
-  abandoned: { label: 'Abandoned', className: 'badge-abandoned', icon: '⌛' },
+const STATUS_CONFIG: Record<
+  GameStatus,
+  { label: string; className: string; icon: string }
+> = {
+  owned: { label: "Owned", className: "badge-owned", icon: "✓" },
+  wishlist: { label: "Wishlist", className: "badge-wishlist", icon: "♥" },
+  playing: { label: "Playing", className: "badge-playing", icon: "▶" },
+  completed: { label: "Completed", className: "badge-completed", icon: "★" },
+  abandoned: { label: "Abandoned", className: "badge-abandoned", icon: "⌛" },
 };
 
 function DiscountBadge({ current, msrp }: { current: number; msrp: number }) {
@@ -33,9 +44,9 @@ function DiscountBadge({ current, msrp }: { current: number; msrp: number }) {
     <span
       className="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold font-display shadow-lg"
       style={{
-        background: 'var(--neon-green)',
-        color: '#000',
-        boxShadow: '0 0 12px rgba(57, 255, 20, 0.4)',
+        background: "var(--neon-green)",
+        color: "#000",
+        boxShadow: "0 0 12px rgba(57, 255, 20, 0.4)",
       }}
     >
       -{pct}%
@@ -53,6 +64,7 @@ export default function GameCard({
   platform,
   status,
   showStatus = false,
+  primaryLinkLabel = "VIEW DETAILS",
 }: GameCardProps) {
   const [imgError, setImgError] = useState(false);
   const statusCfg = status ? STATUS_CONFIG[status] : null;
@@ -62,7 +74,7 @@ export default function GameCard({
       {/* Cover image */}
       <div
         className="relative w-full overflow-hidden"
-        style={{ height: '220px', background: 'var(--bg-elevated)' }}
+        style={{ height: "220px", background: "var(--bg-elevated)" }}
       >
         {image_url && !imgError ? (
           <Image
@@ -75,9 +87,11 @@ export default function GameCard({
           />
         ) : (
           /* Fallback placeholder with theme-aware gradient */
-          <div className="w-full h-full flex items-center justify-center"
+          <div
+            className="w-full h-full flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-void) 100%)',
+              background:
+                "linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-void) 100%)",
             }}
           >
             <span className="text-4xl opacity-30 grayscale filter">🎮</span>
@@ -93,9 +107,9 @@ export default function GameCard({
         <span
           className="absolute top-2 left-2 px-2 py-0.5 rounded text-[9px] font-display tracking-widest"
           style={{
-            background: 'var(--bg-void)',
-            color: 'var(--accent)',
-            border: '1px solid var(--border-subtle)',
+            background: "var(--bg-void)",
+            color: "var(--accent)",
+            border: "1px solid var(--border-subtle)",
             opacity: 0.9,
           }}
         >
@@ -108,7 +122,7 @@ export default function GameCard({
         {/* Title */}
         <h3
           className="text-sm font-semibold leading-snug line-clamp-2 min-h-[2.5rem]"
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: "var(--text-primary)" }}
           title={title}
         >
           {title}
@@ -118,7 +132,9 @@ export default function GameCard({
         <div className="flex items-end gap-2">
           {current_price !== null ? (
             <>
-              <span className={`price-badge ${msrp && current_price < msrp ? 'price-badge-sale' : ''}`}>
+              <span
+                className={`price-badge ${msrp && current_price < msrp ? "price-badge-sale" : ""}`}
+              >
                 ${current_price.toFixed(2)}
               </span>
               {msrp && current_price < msrp && (
@@ -126,16 +142,26 @@ export default function GameCard({
               )}
             </>
           ) : (
-            <span className="text-[10px] font-display" style={{ color: 'var(--text-muted)' }}>AVAILABILITY UNKNOWN</span>
+            <span
+              className="text-[10px] font-display"
+              style={{ color: "var(--text-muted)" }}
+            >
+              AVAILABILITY UNKNOWN
+            </span>
           )}
         </div>
 
-        {/* Status badge */}
+        {/* Status + lendable (derived from status on collection) */}
         {showStatus && statusCfg && (
-          <div className="mt-1">
+          <div className="mt-1 flex flex-wrap items-center gap-2">
             <span className={`badge-status ${statusCfg.className}`}>
               {statusCfg.icon} {statusCfg.label}
             </span>
+            {status && loanableForStatus(status) && (
+              <span className="badge-status badge-lendable">
+                🤲 Lendable
+              </span>
+            )}
           </div>
         )}
 
@@ -145,7 +171,7 @@ export default function GameCard({
             href={`/game?url=${encodeURIComponent(deku_url)}`}
             className="btn-neon btn-neon-cyan flex-1 text-center text-[10px]"
           >
-            View
+            {primaryLinkLabel}
           </Link>
           <a
             href={deku_url}
@@ -155,8 +181,18 @@ export default function GameCard({
             title="Open on DekuDeals"
             aria-label="Open on DekuDeals"
           >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
             </svg>
           </a>
         </div>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import type { GameStatus } from '@/lib/database.types';
+import { loanableForStatus } from '@/lib/collection-lending';
 
 export async function PATCH(
   request: NextRequest,
@@ -12,29 +13,44 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await request.json();
-  const updates: Record<string, unknown> = {};
+  const body = await request.json() as { status?: GameStatus; loanable?: boolean };
 
-  if (body.status !== undefined) {
+  const hasStatus = body.status !== undefined;
+  const hasLoanable = body.loanable !== undefined;
+  if (!hasStatus && !hasLoanable) {
+    return NextResponse.json(
+      { error: 'Provide at least one field to update (status, loanable)' },
+      { status: 400 },
+    );
+  }
+
+  if (hasStatus) {
     const validStatuses: GameStatus[] = ['owned', 'wishlist', 'playing', 'completed', 'abandoned'];
-    if (!validStatuses.includes(body.status)) {
+    if (!validStatuses.includes(body.status!)) {
       return NextResponse.json(
         { error: `status must be one of: ${validStatuses.join(', ')}` },
         { status: 400 },
       );
     }
-    updates.status = body.status;
   }
 
-  if (body.loanable !== undefined) {
-    updates.loanable = Boolean(body.loanable);
+  const { data: existing, error: fetchError } = await supabase
+    .from('user_games')
+    .select('status')
+    .eq('id', params.id)
+    .eq('user_id', user.id)
+    .single();
+
+  if (fetchError || !existing) {
+    return NextResponse.json({ error: 'Collection entry not found' }, { status: 404 });
   }
 
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json(
-      { error: 'Provide at least one field to update (status, loanable)' },
-      { status: 400 },
-    );
+  const newStatus: GameStatus = hasStatus ? body.status! : existing.status;
+  const updates: Record<string, unknown> = {
+    loanable: loanableForStatus(newStatus),
+  };
+  if (hasStatus) {
+    updates.status = newStatus;
   }
 
   const { data, error } = await supabase

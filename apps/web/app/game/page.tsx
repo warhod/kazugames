@@ -4,7 +4,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { DbGame, GameStatus } from '@/lib/database.types';
+import type { DbGame, DbUserGame, GameStatus } from '@/lib/database.types';
+
+type CollectionEntry = Pick<DbUserGame, 'id' | 'status' | 'loanable'>;
 
 const STATUSES: { value: GameStatus; label: string; icon: string }[] = [
   { value: 'owned',     label: 'Owned',     icon: '✓' },
@@ -57,18 +59,20 @@ function GameContent() {
   const [error, setError] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
 
-  // Collection add state
   const [selectedStatus, setSelectedStatus] = useState<GameStatus>('owned');
+  const [collectionEntry, setCollectionEntry] = useState<CollectionEntry | null>(null);
+  const [membershipLoading, setMembershipLoading] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
-  const [addSuccess, setAddSuccess] = useState(false);
-  const [alreadyOwned, setAlreadyOwned] = useState(false);
+  const [collectionBusy, setCollectionBusy] = useState(false);
+  const [collectionErr, setCollectionErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (!url.trim()) return;
 
     setLoading(true);
     setError(null);
+    setCollectionEntry(null);
+    setCollectionErr(null);
 
     fetch(`/api/games?url=${encodeURIComponent(url)}`)
       .then(async (res) => {
@@ -83,10 +87,60 @@ function GameContent() {
       .finally(() => setLoading(false));
   }, [url]);
 
+  useEffect(() => {
+    if (!game?.id) return;
+
+    let cancelled = false;
+    setMembershipLoading(true);
+    setCollectionErr(null);
+
+    fetch(`/api/collection/lookup?game_id=${encodeURIComponent(game.id)}`)
+      .then(async (res) => {
+        if (cancelled) return;
+        if (res.status === 401) {
+          setCollectionEntry(null);
+          return;
+        }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error ?? `HTTP ${res.status}`);
+        }
+        const data: { entry: CollectionEntry | null } = await res.json();
+        if (!cancelled) {
+          setCollectionEntry(data.entry);
+          if (data.entry) setSelectedStatus(data.entry.status);
+        }
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setCollectionErr(e instanceof Error ? e.message : 'Could not load collection status');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setMembershipLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [game?.id]);
+
+  const refreshCollectionEntry = async (gameId: string) => {
+    const res = await fetch(`/api/collection/lookup?game_id=${encodeURIComponent(gameId)}`);
+    if (res.status === 401) {
+      setCollectionEntry(null);
+      return;
+    }
+    if (!res.ok) return;
+    const data: { entry: CollectionEntry | null } = await res.json();
+    setCollectionEntry(data.entry);
+    if (data.entry) setSelectedStatus(data.entry.status);
+  };
+
   const handleAddToCollection = async () => {
     if (!game || adding) return;
     setAdding(true);
-    setAddError(null);
+    setCollectionErr(null);
 
     try {
       const res = await fetch('/api/collection', {
@@ -101,7 +155,8 @@ function GameContent() {
       }
 
       if (res.status === 409) {
-        setAlreadyOwned(true);
+        await refreshCollectionEntry(game.id);
+        setCollectionErr('This title is already in your collection.');
         return;
       }
 
@@ -110,12 +165,82 @@ function GameContent() {
         throw new Error(err.error ?? 'Failed to add to collection');
       }
 
-      setAddSuccess(true);
-      setTimeout(() => router.push('/collection'), 1200);
+      const row: DbUserGame = await res.json();
+      setCollectionEntry({
+        id: row.id,
+        status: row.status,
+        loanable: row.loanable,
+      });
     } catch (e) {
-      setAddError(e instanceof Error ? e.message : 'Something went wrong');
+      setCollectionErr(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleStatusChange = async (next: GameStatus) => {
+    if (!collectionEntry || collectionBusy) return;
+    setSelectedStatus(next);
+    setCollectionBusy(true);
+    setCollectionErr(null);
+    try {
+      const res = await fetch(`/api/collection/${collectionEntry.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      });
+
+      if (res.status === 401) {
+        router.push(`/login?next=${encodeURIComponent(`/game?url=${encodeURIComponent(url)}`)}`);
+        return;
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? 'Failed to update status');
+      }
+
+      const updated: DbUserGame = await res.json();
+      setCollectionEntry({
+        id: updated.id,
+        status: updated.status,
+        loanable: updated.loanable,
+      });
+    } catch (e) {
+      setSelectedStatus(collectionEntry.status);
+      setCollectionErr(e instanceof Error ? e.message : 'Failed to update status');
+    } finally {
+      setCollectionBusy(false);
+    }
+  };
+
+  const handleRemoveFromCollection = async () => {
+    if (!collectionEntry || collectionBusy) return;
+    if (!confirm('Remove this game from your collection?')) return;
+
+    setCollectionBusy(true);
+    setCollectionErr(null);
+    try {
+      const res = await fetch(`/api/collection/${collectionEntry.id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.status === 401) {
+        router.push(`/login?next=${encodeURIComponent(`/game?url=${encodeURIComponent(url)}`)}`);
+        return;
+      }
+
+      if (!res.ok && res.status !== 204) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error ?? 'Failed to remove');
+      }
+
+      setCollectionEntry(null);
+      setSelectedStatus('owned');
+    } catch (e) {
+      setCollectionErr(e instanceof Error ? e.message : 'Failed to remove');
+    } finally {
+      setCollectionBusy(false);
     }
   };
 
@@ -250,7 +375,7 @@ function GameContent() {
                 </p>
               )}
 
-              {/* Add to Collection */}
+              {/* Collection: status + add / remove on this screen */}
               <div
                 className="mt-auto pt-4 border-t"
                 style={{ borderColor: 'var(--border-subtle)' }}
@@ -259,71 +384,78 @@ function GameContent() {
                   className="text-[10px] font-display tracking-[0.15em] uppercase mb-3"
                   style={{ color: 'var(--text-muted)' }}
                 >
-                  ADD TO COLLECTION
+                  STATUS
                 </p>
 
-                {addSuccess ? (
-                  <div
-                    className="px-4 py-3 rounded-lg font-display text-sm text-center"
-                    style={{
-                      background: 'color-mix(in srgb, var(--neon-green) 10%, transparent)',
-                      border: '1px solid color-mix(in srgb, var(--neon-green) 30%, transparent)',
-                      color: 'var(--neon-green)',
-                    }}
-                  >
-                    ✓ ADDED — REDIRECTING TO COLLECTION…
-                  </div>
-                ) : alreadyOwned ? (
-                  <div className="flex flex-col gap-3">
-                    <div
-                      className="px-4 py-3 rounded-lg font-display text-sm"
-                      style={{
-                        background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
-                        border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
-                        color: 'var(--accent)',
-                      }}
-                    >
-                      Already in your collection.
-                    </div>
-                    <Link href="/collection" className="btn-neon btn-neon-cyan text-xs w-fit">
-                      VIEW COLLECTION →
-                    </Link>
-                  </div>
+                {membershipLoading ? (
+                  <div className="skeleton h-10 w-full max-w-xs rounded-md" />
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3">
-                    <select
-                      value={selectedStatus}
-                      onChange={(e) => setSelectedStatus(e.target.value as GameStatus)}
-                      className="input-neon text-xs py-2 px-3"
-                      style={{ background: 'var(--bg-elevated)', width: 'auto' }}
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s.value} value={s.value}>
-                          {s.icon} {s.label}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <select
+                        value={selectedStatus}
+                        onChange={(e) => {
+                          const v = e.target.value as GameStatus;
+                          if (collectionEntry) void handleStatusChange(v);
+                          else setSelectedStatus(v);
+                        }}
+                        disabled={
+                          membershipLoading ||
+                          (collectionEntry ? collectionBusy : adding)
+                        }
+                        className="input-neon text-xs py-2 px-3"
+                        style={{ background: 'var(--bg-elevated)', width: 'auto' }}
+                      >
+                        {STATUSES.map((s) => (
+                          <option key={s.value} value={s.value}>
+                            {s.icon} {s.label}
+                          </option>
+                        ))}
+                      </select>
 
-                    <button
-                      onClick={handleAddToCollection}
-                      disabled={adding}
-                      className="btn-neon btn-neon-solid text-xs px-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {adding ? (
-                        <span className="inline-flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full border-2 border-void border-t-transparent animate-spin" />
-                          ADDING…
-                        </span>
-                      ) : (
-                        '+ ADD TO COLLECTION'
+                      {!collectionEntry && (
+                        <button
+                          type="button"
+                          onClick={() => void handleAddToCollection()}
+                          disabled={adding}
+                          className="btn-neon btn-neon-solid text-xs px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {adding ? (
+                            <span className="inline-flex items-center gap-2">
+                              <span className="w-3 h-3 rounded-full border-2 border-void border-t-transparent animate-spin" />
+                              ADDING…
+                            </span>
+                          ) : (
+                            '+ ADD TO COLLECTION'
+                          )}
+                        </button>
                       )}
-                    </button>
+                    </div>
+
+                    {collectionEntry && (
+                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                        <p
+                          className="text-sm font-display w-full sm:w-auto sm:mr-2"
+                          style={{ color: 'var(--text-primary)' }}
+                        >
+                          Already in your collection.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleRemoveFromCollection}
+                          disabled={collectionBusy}
+                          className="btn-neon btn-neon-pink text-xs px-4 py-2 w-fit disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          REMOVE FROM COLLECTION
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {addError && (
+                {collectionErr && (
                   <p className="mt-2 text-xs" style={{ color: 'var(--accent-secondary)' }}>
-                    {addError}
+                    {collectionErr}
                   </p>
                 )}
               </div>

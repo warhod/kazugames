@@ -1,5 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import type { DbPublicProfile } from '@/lib/database.types';
+
+const PROFILE_FIELDS = 'user_id, display_name, friend_code, nintendo_profile_url' as const;
+
+type ProfileRow = {
+  user_id: string;
+  display_name: string | null;
+  friend_code: string | null;
+  nintendo_profile_url: string | null;
+};
+
+function toPublicProfile(row: ProfileRow | undefined): DbPublicProfile {
+  if (!row) {
+    return { display_name: null, friend_code: null, nintendo_profile_url: null };
+  }
+  return {
+    display_name: row.display_name,
+    friend_code: row.friend_code,
+    nintendo_profile_url: row.nintendo_profile_url,
+  };
+}
 
 export async function GET(
   _request: NextRequest,
@@ -45,10 +66,32 @@ export async function GET(
     .in('user_id', memberIds.length > 0 ? memberIds : ['__none__'])
     .eq('loanable', true);
 
+  let profileRows: ProfileRow[] = [];
+  if (memberIds.length > 0) {
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select(PROFILE_FIELDS)
+      .in('user_id', memberIds);
+    profileRows = (profilesData ?? []) as ProfileRow[];
+  }
+
+  const profileByUserId = new Map(profileRows.map((p) => [p.user_id, p]));
+
+  const membersWithProfiles = (members ?? []).map((m) => ({
+    user_id: m.user_id,
+    joined_at: m.joined_at,
+    profile: toPublicProfile(profileByUserId.get(m.user_id)),
+  }));
+
+  const loanableWithOwners = (loanableGames ?? []).map((ug: { user_id: string }) => ({
+    ...ug,
+    owner_profile: toPublicProfile(profileByUserId.get(ug.user_id)),
+  }));
+
   return NextResponse.json({
     ...group,
-    members: members ?? [],
-    loanable_games: loanableGames ?? [],
+    members: membersWithProfiles,
+    loanable_games: loanableWithOwners,
   });
 }
 

@@ -48,8 +48,14 @@ describe('PATCH /api/collection/[id]', () => {
   });
 
   test('200 on status update', async () => {
-    const updated = { id: 'ug-1', status: 'playing', game: {} };
-    currentMock = createQueuedSupabaseMock({ id: 'u1' }, [{ data: updated, error: null }]);
+    const updated = { id: 'ug-1', status: 'playing', loanable: false, game: {} };
+    currentMock = createQueuedSupabaseMock(
+      { id: 'u1' },
+      [
+        { data: { status: 'owned' }, error: null },
+        { data: updated, error: null },
+      ],
+    );
     const { PATCH } = await import('@/app/api/collection/[id]/route');
     const req = new NextRequest('http://localhost/api/collection/ug-1', {
       method: 'PATCH',
@@ -63,12 +69,30 @@ describe('PATCH /api/collection/[id]', () => {
   test('404 when update fails', async () => {
     currentMock = createQueuedSupabaseMock(
       { id: 'u1' },
-      [{ data: null, error: { message: 'not found' } }],
+      [
+        { data: { status: 'owned' }, error: null },
+        { data: null, error: { message: 'not found' } },
+      ],
     );
     const { PATCH } = await import('@/app/api/collection/[id]/route');
     const req = new NextRequest('http://localhost/api/collection/ug-1', {
       method: 'PATCH',
       body: JSON.stringify({ loanable: true }),
+      headers: { 'content-type': 'application/json' },
+    });
+    const res = await PATCH(req, { params });
+    expect(res.status).toBe(404);
+  });
+
+  test('404 when collection row missing', async () => {
+    currentMock = createQueuedSupabaseMock(
+      { id: 'u1' },
+      [{ data: null, error: { message: 'not found' } }],
+    );
+    const { PATCH } = await import('@/app/api/collection/[id]/route');
+    const req = new NextRequest('http://localhost/api/collection/ug-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'owned' }),
       headers: { 'content-type': 'application/json' },
     });
     const res = await PATCH(req, { params });

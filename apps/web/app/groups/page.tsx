@@ -1,36 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { DbGroup, DbGameLoan } from '@/lib/database.types';
+import type { DbGroup, DbGameLoan, DbGroupMemberView, DbLoanableGameRow } from '@/lib/database.types';
 import { createClient } from '@/lib/supabase/client';
 import GroupPanel from '@/components/GroupPanel';
 
-interface GroupMember {
-  user_id: string;
-  joined_at: string;
-}
-
-interface LoanableGame {
-  id: string;
-  user_id: string;
-  game_id: string;
-  status: string;
-  loanable: boolean;
-  game: {
-    id: string;
-    title: string;
-    deku_url: string;
-    image_url: string | null;
-    current_price: number | null;
-    msrp: number | null;
-    platform: string;
-  };
-}
-
-interface GroupDetail extends DbGroup {
-  members: GroupMember[];
-  loanable_games: LoanableGame[];
-}
+type GroupDetail = DbGroup & {
+  members: DbGroupMemberView[];
+  loanable_games: DbLoanableGameRow[];
+};
 
 type Tab = 'my-groups' | 'join';
 
