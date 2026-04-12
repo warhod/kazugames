@@ -456,10 +456,10 @@ export default function CollectionPage() {
           </div>
         )}
 
-        {/* Filter bar */}
+        {/* Filter bar — wrap + compact padding so laptop widths avoid horizontal scroll */}
         <div className="mb-8">
           <div
-            className="flex flex-wrap gap-1.5 overflow-x-auto rounded-lg p-1.5 sm:flex-nowrap sm:gap-1 sm:p-1"
+            className="flex flex-wrap gap-1 rounded-lg p-1"
             style={{
               background: "var(--bg-surface)",
               border: "1px solid var(--border-subtle)",
@@ -484,7 +484,7 @@ export default function CollectionPage() {
                     setFilter(key);
                     setPage(1);
                   }}
-                  className="flex shrink-0 touch-manipulation items-center gap-1.5 rounded-md px-3 py-2.5 font-display text-xs tracking-[0.08em] transition-all duration-200 sm:px-4 sm:py-2 sm:text-sm"
+                  className="flex shrink-0 touch-manipulation items-center gap-1 rounded-md px-2 py-1.5 font-display text-[11px] leading-none tracking-[0.05em] transition-all duration-200 sm:px-2.5 sm:py-2 sm:text-xs"
                   style={{
                     background: selected ? "var(--bg-elevated)" : "transparent",
                     color: selected ? "var(--accent)" : "var(--text-primary)",
@@ -493,12 +493,12 @@ export default function CollectionPage() {
                       : "none",
                   }}
                 >
-                  <span className="shrink-0" aria-hidden>
+                  <span className="shrink-0 text-[10px]" aria-hidden>
                     {icon}
                   </span>
                   {label}
                   <span
-                    className="ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:text-xs"
+                    className="ml-0 shrink-0 rounded-full px-1 py-px text-[9px] font-semibold tabular-nums sm:px-1.5 sm:text-[10px]"
                     style={{
                       background: selected
                         ? "color-mix(in srgb, var(--accent) 15%, transparent)"
