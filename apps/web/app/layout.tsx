@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Inter, Orbitron, Cinzel, Varela_Round } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -71,6 +72,7 @@ export default function RootLayout({
             {children}
           </main>
         </ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   );

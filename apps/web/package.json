@@ -10,6 +10,7 @@
     "test": "bun test __tests__"
   },
   "dependencies": {
+    "@vercel/speed-insights": "^2.0.0",
     "@supabase/supabase-js": "^2.45.0",
     "@supabase/ssr": "^0.5.0",
     "cheerio": "^1.0.0-rc.12",
