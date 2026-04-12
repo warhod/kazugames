@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { scrapeGame, scrapeSearch, normalizeDekuUrl } from 'deku-scraper';
-
-const STALE_MS = 24 * 60 * 60 * 1000;
-
-const SCRAPE_INCOMPLETE_MESSAGE =
-  'Could not read game details from DekuDeals (missing title). The page may have changed or content may not be available in the fetched HTML.';
-
-function isCompleteScrapedGame(data: { title: unknown }): boolean {
-  return typeof data.title === 'string' && data.title.trim().length > 0;
-}
+import { ensureGameByDekuUrl } from '@/lib/ensure-game-from-deku-url';
+import { scrapeSearch, normalizeDekuUrl } from 'deku-scraper';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -33,41 +25,19 @@ export async function GET(request: NextRequest) {
 }
 
 async function handleUrlLookup(supabase: ReturnType<typeof createClient>, url: string) {
-  const { data: cached } = await supabase
-    .from('games')
-    .select('*')
-    .eq('deku_url', url)
-    .single();
-
-  if (cached) {
-    const age = Date.now() - new Date(cached.updated_at).getTime();
-    if (age < STALE_MS) {
-      return NextResponse.json(cached);
-    }
-  }
-
-  const scraped = await scrapeGame(url);
-  if (!scraped) {
-    if (cached) return NextResponse.json(cached);
-    return NextResponse.json({ error: 'Failed to scrape game' }, { status: 502 });
-  }
-
-  if (!isCompleteScrapedGame(scraped)) {
-    if (cached) return NextResponse.json(cached);
-    return NextResponse.json({ error: SCRAPE_INCOMPLETE_MESSAGE }, { status: 502 });
+  const result = await ensureGameByDekuUrl(supabase, url);
+  if ('error' in result) {
+    return NextResponse.json({ error: result.error }, { status: result.httpStatus });
   }
 
   const { data: game, error } = await supabase
     .from('games')
-    .upsert(
-      { ...scraped, updated_at: new Date().toISOString() },
-      { onConflict: 'deku_url' },
-    )
-    .select()
+    .select('*')
+    .eq('id', result.id)
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error || !game) {
+    return NextResponse.json({ error: error?.message ?? 'Game not found' }, { status: 500 });
   }
 
   return NextResponse.json(game);

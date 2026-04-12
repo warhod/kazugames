@@ -34,7 +34,10 @@ describe('GET /api/games', () => {
       title: 'Foo',
       updated_at: new Date().toISOString(),
     };
-    currentMock = createQueuedSupabaseMock(null, [{ data: cached, error: null }]);
+    currentMock = createQueuedSupabaseMock(null, [
+      { data: cached, error: null },
+      { data: cached, error: null },
+    ]);
     scrapeGame.mockClear();
     const { GET } = await import('@/app/api/games/route');
     const req = new NextRequest(
@@ -90,7 +93,10 @@ describe('GET /api/games', () => {
       title: 'Cached Foo',
       updated_at: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
     };
-    currentMock = createQueuedSupabaseMock(null, [{ data: stale, error: null }]);
+    currentMock = createQueuedSupabaseMock(null, [
+      { data: stale, error: null },
+      { data: stale, error: null },
+    ]);
     scrapeGame.mockImplementation(() =>
       Promise.resolve({
         title: '   ',

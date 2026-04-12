@@ -1,6 +1,6 @@
-import type { Cheerio, CheerioAPI } from 'cheerio';
-import type { CollectionImportGameStatusHint, CollectionItem } from '../types';
-import { normalizeDekuUrl } from './search';
+import type { Cheerio, CheerioAPI } from "cheerio";
+import type { CollectionImportGameStatusHint, CollectionItem } from "../types";
+import { normalizeDekuUrl } from "./search";
 
 /**
  * DekuDeals collection pages (`/collection/…`) render the same server-side browse grid as search:
@@ -12,22 +12,30 @@ import { normalizeDekuUrl } from './search';
  */
 
 function absoluteItemUrl(href: string, baseUrl: string): string {
-  const raw = href.startsWith('http') ? href : baseUrl + href;
+  const raw = href.startsWith("http") ? href : baseUrl + href;
   return normalizeDekuUrl(raw);
 }
 
 function readDetailValue($detail: Cheerio<unknown>): string {
   const $clone = $detail.clone();
-  $clone.find('small').remove();
-  return $clone.text().replace(/\s+/g, ' ').trim();
+  $clone.find("small").remove();
+  return $clone.text().replace(/\s+/g, " ").trim();
 }
 
-function extractStatusLabel($: CheerioAPI, $col: Cheerio<unknown>): string | null {
+function extractStatusLabel(
+  $: CheerioAPI,
+  $col: Cheerio<unknown>,
+): string | null {
   let found: string | null = null;
-  $col.find('.watch-details .detail, .shared-details .detail').each((_, el) => {
+  $col.find(".watch-details .detail, .shared-details .detail").each((_, el) => {
     const $detail = $(el);
-    const label = $detail.find('small.text-muted').first().text().trim().toLowerCase();
-    if (label === 'status') {
+    const label = $detail
+      .find("small.text-muted")
+      .first()
+      .text()
+      .trim()
+      .toLowerCase();
+    if (label === "status") {
       const value = readDetailValue($detail);
       if (value) found = value;
       return false;
@@ -40,17 +48,19 @@ function extractStatusLabel($: CheerioAPI, $col: Cheerio<unknown>): string | nul
  * Parse a single collection HTML document into ordered items.
  * Reuses {@link normalizeDekuUrl} for canonical `/items/…` URLs (platform query stripped).
  */
-export function parseCollectionPage($: CheerioAPI, baseUrl: string): CollectionItem[] {
+export function parseCollectionPage(
+  $: CheerioAPI,
+  baseUrl: string,
+): CollectionItem[] {
   const items: CollectionItem[] = [];
 
-  $('.browse-cards.view-grid .col').each((_, col) => {
+  $(".browse-cards.view-grid .col").each((_, col) => {
     const $col = $(col);
     const $link = $col.find('a.main-link[href*="/items/"]').first();
-    const href = $link.attr('href')?.trim();
+    const href = $link.attr("href")?.trim();
     if (!href) return;
 
-    const title =
-      $link.find('h6').first().text().trim() || $link.text().trim();
+    const title = $link.find("h6").first().text().trim() || $link.text().trim();
     if (!title) return;
 
     const deku_url = absoluteItemUrl(href, baseUrl);
@@ -76,21 +86,21 @@ export function parseCollectionPage($: CheerioAPI, baseUrl: string): CollectionI
 export function mapDekuCollectionStatusLabel(
   label: string | null | undefined,
 ): CollectionImportGameStatusHint {
-  const raw = (label ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
-  if (!raw) return 'owned';
+  const raw = (label ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (!raw) return "owned";
 
-  if (raw === 'currently playing') {
-    return 'playing';
+  if (raw === "currently playing") {
+    return "playing";
   }
-  if (raw === 'completed') {
-    return 'completed';
+  if (raw === "completed") {
+    return "completed";
   }
-  if (raw === 'abandoned') {
-    return 'abandoned';
+  if (raw === "abandoned") {
+    return "abandoned";
   }
-  if (raw === 'want to play') {
-    return 'owned';
+  if (raw === "want to play") {
+    return "owned";
   }
 
-  return 'owned';
+  return "owned";
 }

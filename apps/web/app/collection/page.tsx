@@ -345,8 +345,9 @@ export default function CollectionPage() {
                       disabled={importing || !collectionUrl.trim()}
                       className="font-display shrink-0 touch-manipulation rounded-md px-5 py-2.5 text-sm tracking-widest transition disabled:opacity-50"
                       style={{
-                        background: "var(--accent)",
+                        background: "rgba(23, 144, 151, 1)",
                         color: "var(--bg-root)",
+                        boxShadow: "0px 4px 12px 0px rgba(0, 0, 0, 0.15)",
                       }}
                     >
                       {importing ? "IMPORTING…" : "IMPORT"}
