@@ -30,7 +30,7 @@
   --btn-solid-text: #080808;
 }
 
-[data-theme='zelda'] {
+[data-theme="zelda"] {
   --bg-void: #0a1c15;
   --bg-surface: #1b3022;
   --bg-elevated: #2d4a3a;
@@ -50,7 +50,7 @@
   --btn-solid-text: #0c0c0c;
 }
 
-[data-theme='animal-crossing'] {
+[data-theme="animal-crossing"] {
   --bg-void: #f9fdf9;
   --bg-surface: #ffffff;
   --bg-elevated: #f1f8e9;
@@ -73,7 +73,9 @@
 /* ════════════════════════════════════════════
    BASE RESET & BODY
 ════════════════════════════════════════════ */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -91,12 +93,12 @@ body {
 }
 
 /* Scanline overlay - hidden in Animal Crossing */
-[data-theme='animal-crossing'] body::before {
+[data-theme="animal-crossing"] body::before {
   display: none;
 }
 
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   background: repeating-linear-gradient(
@@ -111,12 +113,12 @@ body::before {
 }
 
 /* Cyber grid background - hidden in Animal Crossing */
-[data-theme='animal-crossing'] body::after {
+[data-theme="animal-crossing"] body::after {
   display: none;
 }
 
 body::after {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   background-image:
@@ -130,7 +132,12 @@ body::after {
 /* ════════════════════════════════════════════
    TYPOGRAPHY
 ════════════════════════════════════════════ */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   letter-spacing: 0.05em;
 }
@@ -154,34 +161,79 @@ h1, h2, h3, h4, h5, h6 {
 
 .neon-text-yellow {
   color: var(--neon-yellow);
-  text-shadow: 0 0 8px var(--neon-yellow), 0 0 20px rgba(252, 238, 10, 0.5);
+  text-shadow:
+    0 0 8px var(--neon-yellow),
+    0 0 20px rgba(252, 238, 10, 0.5);
 }
 
 .neon-text-green {
   color: var(--neon-green);
-  text-shadow: 0 0 8px var(--neon-green), 0 0 20px rgba(57, 255, 20, 0.5);
+  text-shadow:
+    0 0 8px var(--neon-green),
+    0 0 20px rgba(57, 255, 20, 0.5);
 }
 
 /* ════════════════════════════════════════════
    GLITCH EFFECT ON HOVER
 ════════════════════════════════════════════ */
 @keyframes glitch-anim {
-  0%   { clip-path: inset(0 0 98% 0); transform: translate(-2px, 0); }
-  10%  { clip-path: inset(40% 0 50% 0); transform: translate(2px, 0); }
-  20%  { clip-path: inset(80% 0 10% 0); transform: translate(-1px, 0); }
-  30%  { clip-path: inset(20% 0 70% 0); transform: translate(1px, 0); }
-  40%  { clip-path: inset(60% 0 30% 0); transform: translate(-2px, 0); }
-  50%  { clip-path: inset(10% 0 85% 0); transform: translate(2px, 0); }
-  60%  { clip-path: inset(90% 0 0 0);   transform: translate(-1px, 0); }
-  100% { clip-path: inset(0 0 0 0);     transform: translate(0); }
+  0% {
+    clip-path: inset(0 0 98% 0);
+    transform: translate(-2px, 0);
+  }
+  10% {
+    clip-path: inset(40% 0 50% 0);
+    transform: translate(2px, 0);
+  }
+  20% {
+    clip-path: inset(80% 0 10% 0);
+    transform: translate(-1px, 0);
+  }
+  30% {
+    clip-path: inset(20% 0 70% 0);
+    transform: translate(1px, 0);
+  }
+  40% {
+    clip-path: inset(60% 0 30% 0);
+    transform: translate(-2px, 0);
+  }
+  50% {
+    clip-path: inset(10% 0 85% 0);
+    transform: translate(2px, 0);
+  }
+  60% {
+    clip-path: inset(90% 0 0 0);
+    transform: translate(-1px, 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: translate(0);
+  }
 }
 
 @keyframes glitch-anim2 {
-  0%   { clip-path: inset(50% 0 40% 0); transform: translate(2px, 0); color: var(--neon-pink); }
-  25%  { clip-path: inset(20% 0 70% 0); transform: translate(-2px, 0); }
-  50%  { clip-path: inset(70% 0 20% 0); transform: translate(2px, 0); color: var(--neon-cyan); }
-  75%  { clip-path: inset(10% 0 80% 0); transform: translate(-1px, 0); }
-  100% { clip-path: inset(0 0 0 0);     transform: translate(0); }
+  0% {
+    clip-path: inset(50% 0 40% 0);
+    transform: translate(2px, 0);
+    color: var(--neon-pink);
+  }
+  25% {
+    clip-path: inset(20% 0 70% 0);
+    transform: translate(-2px, 0);
+  }
+  50% {
+    clip-path: inset(70% 0 20% 0);
+    transform: translate(2px, 0);
+    color: var(--neon-cyan);
+  }
+  75% {
+    clip-path: inset(10% 0 80% 0);
+    transform: translate(-1px, 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: translate(0);
+  }
 }
 
 .glitch-hover {
@@ -218,7 +270,10 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
 }
 
 .glass-card:hover {
@@ -269,12 +324,14 @@ h1, h2, h3, h4, h5, h6 {
   background: transparent;
   border: 1px solid var(--accent-secondary);
   color: var(--accent-secondary);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--accent-secondary) 35%, transparent);
+  box-shadow: 0 0 6px
+    color-mix(in srgb, var(--accent-secondary) 35%, transparent);
 }
 
 .btn-neon-pink:hover {
   background: color-mix(in srgb, var(--accent-secondary) 12%, transparent);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--accent-secondary) 45%, transparent);
+  box-shadow: 0 0 16px
+    color-mix(in srgb, var(--accent-secondary) 45%, transparent);
 }
 
 .btn-neon-solid {
@@ -302,7 +359,9 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   padding: 0.75rem 1rem;
   width: 100%;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   outline: none;
 }
 
@@ -315,6 +374,92 @@ h1, h2, h3, h4, h5, h6 {
 
 .input-neon::placeholder {
   color: var(--text-muted);
+}
+
+/* Matrix-style home search (SearchBar only) */
+.search-bar-matrix {
+  border-radius: 8px;
+}
+
+.search-bar-matrix::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 10px,
+    rgba(0, 255, 65, 0.045) 10px,
+    rgba(0, 255, 65, 0.045) 11px
+  );
+  background-size: 100% 220%;
+  animation: matrix-rain-drift 5.5s linear infinite;
+  opacity: 0.85;
+}
+
+@keyframes matrix-rain-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100%;
+  }
+}
+
+@keyframes matrix-border-pulse {
+  0%,
+  100% {
+    border-color: rgba(204, 252, 255, 0.12);
+    box-shadow:
+      inset 0 0 24px rgba(0, 255, 65, 0.04),
+      0 0 0 rgba(0, 255, 65, 0);
+  }
+  50% {
+    border-color: rgba(204, 252, 255, 0.22);
+    box-shadow:
+      inset 0 0 32px rgba(0, 255, 65, 0.09),
+      0 0 14px rgba(0, 255, 65, 0.07);
+  }
+}
+
+.input-neon-matrix {
+  position: relative;
+  z-index: 1;
+  border-color: rgba(204, 252, 255, 0.15) !important;
+  text-align: left;
+  background: color-mix(
+    in srgb,
+    var(--bg-surface) 82%,
+    rgba(0, 32, 12, 0.92)
+  ) !important;
+  animation: matrix-border-pulse 2.8s ease-in-out infinite;
+}
+
+.input-neon-matrix:focus {
+  border-color: rgba(204, 252, 255, 0.32) !important;
+  box-shadow:
+    0 0 0 1px rgba(57, 255, 20, 0.28),
+    0 0 18px rgba(57, 255, 20, 0.12),
+    inset 0 0 36px rgba(0, 255, 65, 0.08) !important;
+  animation: none;
+}
+
+[data-theme="zelda"] .input-neon-matrix,
+[data-theme="animal-crossing"] .input-neon-matrix {
+  color: var(--text-primary);
+  caret-color: var(--accent);
+}
+
+[data-theme="zelda"] .input-neon-matrix::placeholder,
+[data-theme="animal-crossing"] .input-neon-matrix::placeholder {
+  color: var(--text-muted);
+}
+
+[data-theme="animal-crossing"] .search-bar-matrix::before {
+  opacity: 0.35;
 }
 
 /* ════════════════════════════════════════════
@@ -333,15 +478,31 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
 }
 
-.badge-owned    { background: rgba(57, 255, 20, 0.12);  color: var(--neon-green);  border: 1px solid rgba(57, 255, 20, 0.3); }
+.badge-owned {
+  background: rgba(57, 255, 20, 0.12);
+  color: var(--neon-green);
+  border: 1px solid rgba(57, 255, 20, 0.3);
+}
 .badge-wishlist {
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--accent);
   border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
 }
-.badge-playing  { background: rgba(252, 238, 10, 0.12); color: var(--neon-yellow); border: 1px solid rgba(252, 238, 10, 0.3); }
-.badge-completed{ background: rgba(191, 0, 255, 0.12);  color: var(--neon-purple); border: 1px solid rgba(191, 0, 255, 0.3); }
-.badge-abandoned{ background: rgba(107, 114, 128, 0.12); color: var(--text-muted); border: 1px solid rgba(107, 114, 128, 0.3); }
+.badge-playing {
+  background: rgba(252, 238, 10, 0.12);
+  color: var(--neon-yellow);
+  border: 1px solid rgba(252, 238, 10, 0.3);
+}
+.badge-completed {
+  background: rgba(191, 0, 255, 0.12);
+  color: var(--neon-purple);
+  border: 1px solid rgba(191, 0, 255, 0.3);
+}
+.badge-abandoned {
+  background: rgba(107, 114, 128, 0.12);
+  color: var(--text-muted);
+  border: 1px solid rgba(107, 114, 128, 0.3);
+}
 .badge-lendable {
   background: rgba(57, 255, 20, 0.1);
   color: var(--neon-green);
@@ -352,8 +513,12 @@ h1, h2, h3, h4, h5, h6 {
    SKELETON LOADER
 ════════════════════════════════════════════ */
 @keyframes shimmer {
-  0%   { background-position: -800px 0; }
-  100% { background-position: 800px 0; }
+  0% {
+    background-position: -800px 0;
+  }
+  100% {
+    background-position: 800px 0;
+  }
 }
 
 .skeleton {
@@ -394,13 +559,20 @@ h1, h2, h3, h4, h5, h6 {
 /* ════════════════════════════════════════════
    SCROLLBAR (Webkit)
 ════════════════════════════════════════════ */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-void);
+}
 ::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--accent) 32%, transparent);
   border-radius: 3px;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
 
 /* ════════════════════════════════════════════
    SELECTION

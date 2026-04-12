@@ -44,14 +44,14 @@ export default function SearchBar({ initialValue = "" }: SearchBarProps) {
       className="relative flex flex-col gap-1.5 w-full"
     >
       <div className="flex gap-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 search-bar-matrix">
           <input
             id="game-search"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Enter a game title or DekuDeals item URL"
-            className="input-neon pl-14 pr-4 py-3 text-base w-full"
+            className="input-neon input-neon-matrix pl-14 pr-4 py-3 text-base w-full text-left"
             disabled={loading}
             aria-label="Enter a game title or DekuDeals item URL"
             aria-describedby={
