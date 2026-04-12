@@ -105,7 +105,7 @@ function SearchContent() {
               </div>
             )}
           </div>
-          <div className="w-full md:w-96">
+          <div className="w-full min-w-0 md:flex-1 md:max-w-3xl">
             <SearchBar initialValue={q} />
           </div>
         </div>

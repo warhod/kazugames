@@ -174,8 +174,8 @@ export default function CollectionPage() {
             </p>
           </div>
 
-          {/* Quick-add search */}
-          <div className="w-full md:w-80">
+          {/* Quick-add search — wide enough for Deku URL placeholder */}
+          <div className="w-full min-w-0 md:flex-1 md:max-w-3xl">
             <SearchBar />
           </div>
         </div>
@@ -328,7 +328,7 @@ export default function CollectionPage() {
                       type="url"
                       name="collection_url"
                       autoComplete="off"
-                      placeholder="https://www.dekudeals.com/collection/…"
+                      placeholder="Enter or Paste a collection URL"
                       value={collectionUrl}
                       onChange={(ev) => setCollectionUrl(ev.target.value)}
                       disabled={importing}
