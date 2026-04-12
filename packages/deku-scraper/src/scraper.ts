@@ -1,9 +1,19 @@
 import * as cheerio from 'cheerio';
-import { GameData, SearchResult } from './types';
+import { CollectionItem, GameData, SearchResult } from './types';
+import { parseCollectionPage } from './parsers/collection-page';
 import { parseGamePage } from './parsers/game-page';
 import { parseSearchResults } from './parsers/search';
 
 const DEKU_BASE_URL = 'https://www.dekudeals.com';
+
+/**
+ * Default `maxPages` for {@link scrapeCollection}: first page only unless callers pass a higher limit.
+ * Full imports should pass a larger value (still bounded by {@link MAX_COLLECTION_SCRAPE_PAGES}).
+ */
+export const DEFAULT_COLLECTION_SCRAPE_MAX_PAGES = 1;
+
+/** Hard ceiling so a bug or huge library cannot unboundedly fetch in one call. */
+export const MAX_COLLECTION_SCRAPE_PAGES = 50;
 
 const DEFAULT_HEADERS = {
   'User-Agent':
@@ -42,6 +52,53 @@ export async function scrapeSearch(query: string): Promise<SearchResult[]> {
     return parseSearchResults($, DEKU_BASE_URL);
   } catch (error) {
     console.error('Error searching games:', error);
+    return [];
+  }
+}
+
+export type ScrapeCollectionOptions = {
+  /**
+   * How many `?page=` chunks to fetch (Deku paginates the same collection URL).
+   * Defaults to {@link DEFAULT_COLLECTION_SCRAPE_MAX_PAGES} (first page only for v1).
+   */
+  maxPages?: number;
+};
+
+/**
+ * Fetches one or more HTML pages for a DekuDeals collection URL and parses each with {@link parseCollectionPage}.
+ * Stops early when a page yields zero items. Results are concatenated in order across pages.
+ */
+export async function scrapeCollection(
+  collectionUrl: string,
+  options?: ScrapeCollectionOptions,
+): Promise<CollectionItem[]> {
+  const maxPages = Math.min(
+    options?.maxPages ?? DEFAULT_COLLECTION_SCRAPE_MAX_PAGES,
+    MAX_COLLECTION_SCRAPE_PAGES,
+  );
+
+  const all: CollectionItem[] = [];
+
+  try {
+    const base = new URL(collectionUrl);
+    base.hash = '';
+
+    for (let page = 1; page <= maxPages; page++) {
+      const pageUrl = new URL(base.toString());
+      pageUrl.searchParams.set('page', String(page));
+
+      const html = await fetchHtml(pageUrl.toString());
+      const $ = cheerio.load(html);
+      const batch = parseCollectionPage($, DEKU_BASE_URL);
+      if (batch.length === 0) {
+        break;
+      }
+      all.push(...batch);
+    }
+
+    return all;
+  } catch (error) {
+    console.error('Error scraping collection:', error);
     return [];
   }
 }
