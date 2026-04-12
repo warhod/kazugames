@@ -68,6 +68,19 @@ export async function POST(request: NextRequest) {
   const slice = items.slice(0, MAX_IMPORT_ITEMS);
   const truncated = items.length > MAX_IMPORT_ITEMS;
 
+  if (slice.length > 0) {
+    const { error: clearError } = await supabase
+      .from("user_games")
+      .delete()
+      .eq("user_id", user.id);
+    if (clearError) {
+      return NextResponse.json(
+        { error: clearError.message || "Failed to reset collection" },
+        { status: 500 },
+      );
+    }
+  }
+
   let imported = 0;
   let skipped = 0;
   let failed = 0;

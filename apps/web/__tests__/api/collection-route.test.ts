@@ -12,7 +12,7 @@ describe('GET /api/collection', () => {
   test('returns 401 when not authenticated', async () => {
     currentMock = createQueuedSupabaseMock(null, []);
     const { GET } = await import('@/app/api/collection/route');
-    const res = await GET();
+    const res = await GET(new NextRequest('http://localhost/api/collection'));
     expect(res.status).toBe(401);
     const body = await res.json();
     expect(body.error).toBe('Unauthorized');
@@ -22,13 +22,30 @@ describe('GET /api/collection', () => {
     const rows = [{ id: 'ug1', user_id: 'u1', game_id: 'g1', status: 'owned', game: { title: 'Zelda' } }];
     currentMock = createQueuedSupabaseMock(
       { id: 'u1' },
-      [{ data: rows, error: null }],
+      [
+        { data: null, error: null, count: 1 },
+        { data: null, error: null, count: 1 },
+        { data: null, error: null, count: 0 },
+        { data: null, error: null, count: 0 },
+        { data: null, error: null, count: 0 },
+        { data: null, error: null, count: 0 },
+        { data: null, error: null, count: 1 },
+        { data: rows, error: null },
+      ],
     );
     const { GET } = await import('@/app/api/collection/route');
-    const res = await GET();
+    const res = await GET(
+      new NextRequest('http://localhost/api/collection?page=1&per_page=20'),
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual(rows);
+    expect(body.items).toEqual(rows);
+    expect(body.total).toBe(1);
+    expect(body.filtered_total).toBe(1);
+    expect(body.page).toBe(1);
+    expect(body.per_page).toBe(20);
+    expect(body.status_counts.owned).toBe(1);
+    expect(body.lendable_count).toBe(1);
   });
 
   test('returns 500 when Supabase errors', async () => {
@@ -37,7 +54,7 @@ describe('GET /api/collection', () => {
       [{ data: null, error: { message: 'db down' } }],
     );
     const { GET } = await import('@/app/api/collection/route');
-    const res = await GET();
+    const res = await GET(new NextRequest('http://localhost/api/collection'));
     expect(res.status).toBe(500);
   });
 });

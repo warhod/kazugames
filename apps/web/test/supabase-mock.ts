@@ -3,7 +3,12 @@
  * Each `from()` consumes the next queued `{ data, error }` resolution.
  */
 
-export type MockQueryResult = { data: unknown; error: unknown };
+export type MockQueryResult = {
+  data: unknown;
+  error: unknown;
+  /** Set for `{ count: 'exact', head: true }` selects (Supabase returns `count` on the response). */
+  count?: number | null;
+};
 
 function createQueryBuilder(result: MockQueryResult): object {
   const builder: Record<string, unknown> = {};
@@ -19,6 +24,7 @@ function createQueryBuilder(result: MockQueryResult): object {
     'or',
     'order',
     'limit',
+    'range',
     'ilike',
     'single',
     'maybeSingle',
@@ -28,10 +34,15 @@ function createQueryBuilder(result: MockQueryResult): object {
   }
   return Object.assign(builder, {
     then(
-      onFulfilled?: (value: MockQueryResult) => unknown,
+      onFulfilled?: (value: MockQueryResult & { count: number | null }) => unknown,
       onRejected?: (reason: unknown) => unknown,
     ) {
-      return Promise.resolve(result).then(onFulfilled as never, onRejected as never);
+      const payload = {
+        data: result.data,
+        error: result.error,
+        count: result.count ?? null,
+      };
+      return Promise.resolve(payload).then(onFulfilled as never, onRejected as never);
     },
   });
 }
