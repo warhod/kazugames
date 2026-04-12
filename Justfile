@@ -1,4 +1,4 @@
-# Kazu Deals task runner
+# Kazu Games task runner
 
 # Show recipes with short descriptions (`just` uses `[doc]` / `[group]` for --list).
 
@@ -77,10 +77,27 @@ test-all:
 lint:
     cd apps/web && bun run lint
 
-[group("scraper")]
+[group("build")]
 [doc("Compile/build the deku-scraper package")]
 scraper-build:
     cd packages/deku-scraper && bun run build
+
+[group("deploy")]
+[doc("Deploy the web app to Vercel")]
+deploy-web:
+    cd apps/web && bunx vercel deploy
+
+[group("deploy")]
+[doc("Deploy the deku-scraper package to Vercel")]
+deploy-scraper:
+    cd packages/deku-scraper && bunx vercel deploy
+
+[group("deploy")]
+[doc("Deploy the web app and deku-scraper package to Vercel")]
+deploy: 
+    {{just_executable()}} deploy-web
+    {{just_executable()}} deploy-scraper
+    @echo "Deploy done. Visit https://vercel.com/dashboard to view the deployed projects."
 
 [group("setup")]
 [doc("Remove build outputs, Bun PM cache, workspace node_modules, and common tool caches")]
