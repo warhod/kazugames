@@ -85,7 +85,7 @@ scraper-build:
 [group("deploy")]
 [doc("Deploy the web app to Vercel")]
 deploy-web:
-    cd apps/web && bunx vercel deploy
+    bunx vercel deploy
 
 [group("deploy")]
 [doc("Deploy the deku-scraper package to Vercel")]
