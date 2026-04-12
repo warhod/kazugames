@@ -1,9 +1,9 @@
 FROM mcr.microsoft.com/devcontainers/javascript-node:dev-24
 
-# Install Bun
 ENV BUN_INSTALL=/bun
+ARG BUN_VERSION=1.3.11
 RUN sudo mkdir -p ${BUN_INSTALL} \
-    && curl -fsSL https://bun.sh/install | bash \
+    && curl -fsSL https://bun.com/install | bash -s "bun-v${BUN_VERSION}" \
     && chown -R node:node /bun
 
 # Install Just
