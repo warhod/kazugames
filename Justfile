@@ -77,15 +77,16 @@ lint:
     cd apps/web && bun run lint
 
 [group("deploy")]
-[doc("Deploy the web app to Vercel (apps/web; set Root Directory to apps/web in Vercel)")]
-deploy-web:
+[doc("Same as deploy-web (Preview)")]
+deploy:
     cd apps/web && bunx vercel deploy
+    @echo "Preview deploy done. For Production run: just deploy-prod"
 
 [group("deploy")]
-[doc("Deploy the web app to Vercel")]
-deploy: 
-    {{just_executable()}} deploy-web
-    @echo "Deploy done. Visit https://vercel.com/dashboard to view the deployed projects."
+[doc("Deploy the web app to Vercel Production")]
+deploy-prod:
+    cd apps/web && bunx vercel --prod
+    @echo "Production deploy done. Visit https://vercel.com/dashboard to view."
 
 [group("setup")]
 [doc("Remove build outputs, Bun PM cache, workspace node_modules, and common tool caches")]
