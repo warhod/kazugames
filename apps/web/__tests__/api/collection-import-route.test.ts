@@ -10,8 +10,8 @@ mock.module('@/lib/supabase/server', () => ({
 
 const scrapeCollection = mock(() => Promise.resolve([] as never[]));
 
-/** Provide full surface so `mock.module` does not clobber `deku-scraper` for other test files in the same run. */
-mock.module('deku-scraper', () => ({
+/** Provide full surface so `mock.module` does not clobber `@/lib/deku-scraper` for other test files in the same run. */
+mock.module('@/lib/deku-scraper', () => ({
   scrapeGame: mock(() => Promise.resolve(null)),
   scrapeSearch: mock(() => Promise.resolve([] as never[])),
   scrapeCollection,

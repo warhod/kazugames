@@ -1,11 +1,11 @@
 import type { GameStatus } from "@/lib/database.types";
-import type { CollectionImportGameStatusHint } from "deku-scraper";
+import type { CollectionImportGameStatusHint } from "@/lib/deku-scraper";
 
 /**
  * How DekuDeals collection import maps into `user_games.status`:
  *
  * - **Dropped (our UI)** is stored as **`abandoned`**. DekuDeals labels that state **"Abandoned"** on collection cards — same meaning; we only use a different word in the app.
- * - Other labels follow `mapDekuCollectionStatusLabel` in `deku-scraper` (e.g. "Currently playing" → `playing`).
+ * - Other labels follow `mapDekuCollectionStatusLabel` in `@/lib/deku-scraper` (e.g. "Currently playing" → `playing`).
  */
 
 /**

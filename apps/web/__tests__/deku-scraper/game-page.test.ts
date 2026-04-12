@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll } from 'bun:test';
 import * as cheerio from 'cheerio';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseGamePage } from '../src';
+import { parseGamePage } from '../../lib/deku-scraper/parsers/game-page';
 
 function loadFixture(html: string, url: string) {
   const $ = cheerio.load(html);

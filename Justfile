@@ -52,24 +52,23 @@ db-login:
     bunx supabase login
 
 [group("build")]
-[doc("Production build for the web app (rebuilds scraper first)")]
+[doc("Production build for the web app")]
 build:
-    cd packages/deku-scraper && bun run build
     cd apps/web && bun run build
 
 [group("build")]
-[doc("Run package tests for deku-scraper only")]
-test:
-    cd packages/deku-scraper && bun test
+[doc("Run Deku scraper unit tests (under apps/web)")]
+test-deku-scraper:
+    cd apps/web && bun test __tests__/deku-scraper
 
 [group("build")]
-[doc("Run apps/web unit tests (API routes, etc.)")]
+[doc("Run apps/web unit tests (API routes, etc.) except deku-scraper tests")]
 test-web:
-    cd apps/web && bun test __tests__
+    cd apps/web && bun test __tests__/api
 
 [group("build")]
 [doc("Run all workspace tests (bun --recursive)")]
-test-all:
+test:
     bun test --recursive
 
 [group("build")]
@@ -77,33 +76,21 @@ test-all:
 lint:
     cd apps/web && bun run lint
 
-[group("build")]
-[doc("Compile/build the deku-scraper package")]
-scraper-build:
-    cd packages/deku-scraper && bun run build
-
 [group("deploy")]
 [doc("Deploy the web app to Vercel (apps/web; set Root Directory to apps/web in Vercel)")]
 deploy-web:
     cd apps/web && bunx vercel deploy
 
 [group("deploy")]
-[doc("Deploy the deku-scraper package to Vercel")]
-deploy-scraper:
-    cd packages/deku-scraper && bunx vercel deploy
-
-[group("deploy")]
-[doc("Deploy the web app and deku-scraper package to Vercel")]
+[doc("Deploy the web app to Vercel")]
 deploy: 
     {{just_executable()}} deploy-web
-    {{just_executable()}} deploy-scraper
     @echo "Deploy done. Visit https://vercel.com/dashboard to view the deployed projects."
 
 [group("setup")]
 [doc("Remove build outputs, Bun PM cache, workspace node_modules, and common tool caches")]
 clean:
     rm -rf apps/web/.next apps/web/out apps/web/build
-    rm -rf packages/deku-scraper/dist
     rm -rf .turbo coverage .vercel
     find . -name '*.tsbuildinfo' ! -path '*/node_modules/*' -type f -exec rm -f {} +
     find . -name '.eslintcache' ! -path '*/node_modules/*' -type f -exec rm -f {} +

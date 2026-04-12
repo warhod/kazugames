@@ -5,11 +5,11 @@ import { join } from 'path';
 import {
   mapDekuCollectionStatusLabel,
   parseCollectionPage,
-} from '../src/parsers/collection-page';
+} from '../../lib/deku-scraper/parsers/collection-page';
 import {
   DEFAULT_COLLECTION_SCRAPE_MAX_PAGES,
   scrapeCollection,
-} from '../src/scraper';
+} from '../../lib/deku-scraper/scraper';
 
 const DEKU_BASE = 'https://www.dekudeals.com';
 

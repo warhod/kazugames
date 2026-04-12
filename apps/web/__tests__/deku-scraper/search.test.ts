@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll } from 'bun:test';
 import * as cheerio from 'cheerio';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseSearchResults } from '../src';
+import { parseSearchResults } from '../../lib/deku-scraper/parsers/search';
 
 const DEKU_BASE = 'https://www.dekudeals.com';
 

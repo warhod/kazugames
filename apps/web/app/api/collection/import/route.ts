@@ -8,7 +8,7 @@ import {
   normalizeDekuUrl,
   mapDekuCollectionStatusLabel,
   MAX_COLLECTION_SCRAPE_PAGES,
-} from "deku-scraper";
+} from "@/lib/deku-scraper";
 
 const MAX_IMPORT_ITEMS = 200;
 /** Small delay between items to avoid hammering Deku when scraping many games in sequence. */

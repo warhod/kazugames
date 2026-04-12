@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { scrapeGame, normalizeDekuUrl } from 'deku-scraper';
+import { scrapeGame, normalizeDekuUrl } from '@/lib/deku-scraper';
 
 /** Max age before search DB hits are treated as stale (matches scrape freshness). */
 export const STALE_MS = 24 * 60 * 60 * 1000;

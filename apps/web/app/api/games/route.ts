@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ensureGameByDekuUrl, STALE_MS } from '@/lib/ensure-game-from-deku-url';
-import { scrapeSearch, normalizeDekuUrl } from 'deku-scraper';
+import { scrapeSearch, normalizeDekuUrl } from '@/lib/deku-scraper';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;

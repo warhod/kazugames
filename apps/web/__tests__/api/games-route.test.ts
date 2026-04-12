@@ -12,7 +12,7 @@ const scrapeGame = mock(() => Promise.resolve(null as null));
 const scrapeSearch = mock(() => Promise.resolve([] as never[]));
 const normalizeDekuUrl = mock((url: string) => url);
 
-mock.module('deku-scraper', () => ({
+mock.module('@/lib/deku-scraper', () => ({
   scrapeGame,
   scrapeSearch,
   normalizeDekuUrl,
