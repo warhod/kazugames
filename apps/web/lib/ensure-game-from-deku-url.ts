@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { scrapeGame, normalizeDekuUrl } from 'deku-scraper';
 
-const STALE_MS = 24 * 60 * 60 * 1000;
+/** Max age before search DB hits are treated as stale (matches scrape freshness). */
+export const STALE_MS = 24 * 60 * 60 * 1000;
 
 /** Same copy as legacy GET /api/games?url= responses for incomplete scrapes. */
 export const SCRAPE_INCOMPLETE_MESSAGE =

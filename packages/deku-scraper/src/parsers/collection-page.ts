@@ -1,4 +1,5 @@
 import type { Cheerio, CheerioAPI } from "cheerio";
+import type { Element } from "domhandler";
 import type { CollectionImportGameStatusHint, CollectionItem } from "../types";
 import { normalizeDekuUrl } from "./search";
 
@@ -16,7 +17,7 @@ function absoluteItemUrl(href: string, baseUrl: string): string {
   return normalizeDekuUrl(raw);
 }
 
-function readDetailValue($detail: Cheerio<unknown>): string {
+function readDetailValue($detail: Cheerio<Element>): string {
   const $clone = $detail.clone();
   $clone.find("small").remove();
   return $clone.text().replace(/\s+/g, " ").trim();
@@ -24,7 +25,7 @@ function readDetailValue($detail: Cheerio<unknown>): string {
 
 function extractStatusLabel(
   $: CheerioAPI,
-  $col: Cheerio<unknown>,
+  $col: Cheerio<Element>,
 ): string | null {
   let found: string | null = null;
   $col.find(".watch-details .detail, .shared-details .detail").each((_, el) => {

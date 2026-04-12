@@ -3,9 +3,9 @@ import SearchBar from "@/components/SearchBar";
 import CollectionGrid from "@/components/CollectionGrid";
 
 export const metadata: Metadata = {
-  title: "KazuDeals — Switch collections & friend lending",
+  title: "KazuGames — Switch collections & friend lending",
   description:
-    "Discover Nintendo Switch games via DekuDeals prices, track your collection, and lend titles inside your friend group.",
+    "Discover Nintendo Switch games, track your collection, and lend titles inside your friend group. Catalog data from DekuDeals.",
 };
 
 const FEATURED_GAMES = [
@@ -100,7 +100,7 @@ export default function HomePage() {
             className="w-1.5 h-1.5 rounded-full animate-pulse"
             style={{ background: "var(--accent)" }}
           />
-          LIVE PRICES FROM DEKUDEALS
+          DEKU CATALOG & PRICES
         </div>
 
         {/* Main headline */}
@@ -125,8 +125,8 @@ export default function HomePage() {
           {[
             "Friend Groups",
             "Game Lending",
-            "Live Prices",
-            "Wishlist Alerts",
+            "Deku-backed catalog",
+            "Wishlist & loans",
           ].map((feat) => (
             <span
               key={feat}
@@ -151,10 +151,10 @@ export default function HomePage() {
             style={{ borderColor: "var(--border-subtle)" }}
           >
             <h2 className="text-xl font-bold font-display text-text-primary tracking-widest uppercase">
-              <span style={{ color: "var(--accent)" }}>★</span> FEATURED DEALS
+              <span style={{ color: "var(--accent)" }}>★</span> FEATURED GAMES
             </h2>
             <span className="text-[10px] font-display text-text-muted tracking-[0.3em] uppercase">
-              POWERED BY DEKUDEALS
+              CATALOG FROM DEKUDEALS
             </span>
           </div>
           <CollectionGrid games={FEATURED_GAMES} />
@@ -175,7 +175,7 @@ export default function HomePage() {
               {
                 step: "01",
                 title: "SEARCH & TRACK",
-                desc: "Find any Nintendo Switch game via DekuDeals. Add it to your collection with one click.",
+                desc: "Search the DekuDeals catalog for Switch games. Add titles to your collection in one click.",
               },
               {
                 step: "02",

@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/client';
-import ThemeToggle from './ThemeToggle';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+import ThemeToggle from "./ThemeToggle";
 
 const navLinks = [
-  { href: '/', label: 'Discover' },
-  { href: '/collection', label: 'Collection' },
-  { href: '/groups', label: 'Groups' },
+  { href: "/", label: "Discover" },
+  { href: "/collection", label: "Collection" },
+  { href: "/groups", label: "Groups" },
 ];
 
 const glassBarStyle = {
-  background: 'var(--glass-bg)',
-  backdropFilter: 'blur(16px)',
-  borderColor: 'var(--border-subtle)',
+  background: "var(--glass-bg)",
+  backdropFilter: "blur(16px)",
+  borderColor: "var(--border-subtle)",
 } as const;
 
 function MainNavLink({
@@ -28,13 +28,13 @@ function MainNavLink({
   href: string;
   label: string;
   pathname: string;
-  layout: 'desktop' | 'mobile';
+  layout: "desktop" | "mobile";
 }) {
   const isActive = pathname === href;
-  const color = isActive ? 'var(--accent)' : 'var(--text-muted)';
-  const textShadow = isActive ? '0 0 8px var(--accent)' : 'none';
+  const color = isActive ? "var(--accent)" : "var(--text-muted)";
+  const textShadow = isActive ? "0 0 8px var(--accent)" : "none";
 
-  if (layout === 'desktop') {
+  if (layout === "desktop") {
     return (
       <Link
         href={href}
@@ -42,9 +42,11 @@ function MainNavLink({
         style={{
           color,
           textShadow,
-          borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+          borderBottom: isActive
+            ? "2px solid var(--accent)"
+            : "2px solid transparent",
         }}
-        aria-current={isActive ? 'page' : undefined}
+        aria-current={isActive ? "page" : undefined}
       >
         {label}
       </Link>
@@ -58,11 +60,13 @@ function MainNavLink({
       style={{
         color,
         textShadow,
-        borderColor: 'var(--border-subtle)',
-        background: isActive ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : undefined,
-        boxShadow: isActive ? 'inset 0 -2px 0 var(--accent)' : undefined,
+        borderColor: "var(--border-subtle)",
+        background: isActive
+          ? "color-mix(in srgb, var(--accent) 12%, transparent)"
+          : undefined,
+        boxShadow: isActive ? "inset 0 -2px 0 var(--accent)" : undefined,
       }}
-      aria-current={isActive ? 'page' : undefined}
+      aria-current={isActive ? "page" : undefined}
     >
       {label}
     </Link>
@@ -88,7 +92,7 @@ export default function Navbar() {
     const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   return (
@@ -99,7 +103,11 @@ export default function Navbar() {
         style={glassBarStyle}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
+        <Link
+          href="/"
+          className="flex items-center gap-0 shrink-0 whitespace-nowrap tracking-tight"
+          aria-label="Kazu Games home"
+        >
           <span
             className="text-lg neon-text-cyan glitch-hover font-display"
             data-text="KAZU"
@@ -109,18 +117,24 @@ export default function Navbar() {
           <span
             className="text-lg font-black font-display"
             style={{
-              color: 'var(--accent-secondary)',
-              textShadow: '0 0 8px var(--accent-secondary)',
+              color: "var(--accent-secondary)",
+              textShadow: "0 0 8px var(--accent-secondary)",
             }}
           >
-            DEALS
+            GAMES
           </span>
         </Link>
 
         {/* Nav links — wide screens only (narrow: secondary row below) */}
         <nav className="hidden md:flex items-center gap-1" aria-label="Main">
           {navLinks.map(({ href, label }) => (
-            <MainNavLink key={href} href={href} label={label} pathname={pathname} layout="desktop" />
+            <MainNavLink
+              key={href}
+              href={href}
+              label={label}
+              pathname={pathname}
+              layout="desktop"
+            />
           ))}
         </nav>
 
@@ -131,12 +145,16 @@ export default function Navbar() {
             <div className="flex items-center gap-3">
               <span
                 className="hidden sm:inline max-w-[140px] truncate text-[10px] font-display"
-                style={{ color: 'var(--text-muted)' }}
+                style={{ color: "var(--text-muted)" }}
                 title={user.email ?? undefined}
               >
                 {user.email}
               </span>
-              <button type="button" onClick={() => void signOut()} className="btn-neon btn-neon-pink text-xs">
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="btn-neon btn-neon-pink text-xs"
+              >
                 Sign out
               </button>
             </div>
@@ -155,7 +173,13 @@ export default function Navbar() {
         aria-label="Main"
       >
         {navLinks.map(({ href, label }) => (
-          <MainNavLink key={href} href={href} label={label} pathname={pathname} layout="mobile" />
+          <MainNavLink
+            key={href}
+            href={href}
+            label={label}
+            pathname={pathname}
+            layout="mobile"
+          />
         ))}
       </nav>
 
@@ -163,7 +187,8 @@ export default function Navbar() {
       <div
         className="h-px w-full shrink-0"
         style={{
-          background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
+          background:
+            "linear-gradient(90deg, transparent, var(--accent), transparent)",
           opacity: 0.4,
         }}
       />
