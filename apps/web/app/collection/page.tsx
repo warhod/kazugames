@@ -8,6 +8,13 @@ import { loanableForStatus } from "@/lib/collection-lending";
 
 type FilterTab = "all" | GameStatus | "lendable";
 
+type CollectionImportResult = {
+  imported: number;
+  skipped: number;
+  failed: number;
+  errors?: { message: string; url?: string }[];
+};
+
 const FILTER_TABS: { key: FilterTab; label: string; icon: string }[] = [
   { key: "all", label: "ALL", icon: "◈" },
   { key: "owned", label: "OWNED", icon: "✓" },
@@ -23,17 +30,28 @@ export default function CollectionPage() {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [collectionUrl, setCollectionUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importResult, setImportResult] = useState<CollectionImportResult | null>(
+    null,
+  );
 
-  const fetchCollection = useCallback(async () => {
+  const fetchCollection = useCallback(async (opts?: { background?: boolean }) => {
+    const background = opts?.background === true;
     try {
-      setLoading(true);
+      if (!background) {
+        setLoading(true);
+      }
       setError(null);
 
       const res = await fetch("/api/collection");
 
       if (res.status === 401) {
         setError("Sign in to view your collection.");
-        setLoading(false);
+        if (!background) {
+          setLoading(false);
+        }
         return;
       }
 
@@ -47,9 +65,60 @@ export default function CollectionPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
-      setLoading(false);
+      if (!background) {
+        setLoading(false);
+      }
     }
   }, []);
+
+  const handleCollectionImport = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      const url = collectionUrl.trim();
+      if (!url || importing) return;
+
+      setImporting(true);
+      setImportError(null);
+      setImportResult(null);
+
+      try {
+        const res = await fetch("/api/collection/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ collection_url: url }),
+        });
+
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          imported?: number;
+          skipped?: number;
+          failed?: number;
+          errors?: { message: string; url?: string }[];
+        };
+
+        if (!res.ok) {
+          setImportError(body.error || "Import failed");
+          return;
+        }
+
+        const result: CollectionImportResult = {
+          imported: body.imported ?? 0,
+          skipped: body.skipped ?? 0,
+          failed: body.failed ?? 0,
+          errors: body.errors,
+        };
+        setImportResult(result);
+        await fetchCollection({ background: true });
+      } catch (err) {
+        setImportError(
+          err instanceof Error ? err.message : "Something went wrong",
+        );
+      } finally {
+        setImporting(false);
+      }
+    },
+    [collectionUrl, importing, fetchCollection],
+  );
 
   useEffect(() => {
     fetchCollection();
@@ -205,6 +274,187 @@ export default function CollectionPage() {
             >
               Games with this status will appear here.
             </p>
+          </div>
+        ) : userGames.length === 0 && !error ? (
+          <div className="flex flex-col gap-8" aria-label="Import collection">
+            <div
+              className="rounded-lg p-6 sm:p-8"
+              style={{
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border-subtle)",
+                boxShadow: "0 4px 24px color-mix(in srgb, var(--bg-elevated) 40%, transparent)",
+              }}
+            >
+              <h2
+                className="font-display text-lg sm:text-xl tracking-[0.12em] mb-2"
+                style={{ color: "var(--accent)" }}
+              >
+                IMPORT FROM DEKUDEALS
+              </h2>
+              <p
+                className="text-sm mb-6 max-w-xl leading-relaxed"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Paste a public{" "}
+                <a
+                  href="https://www.dekudeals.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                  style={{ color: "var(--accent)" }}
+                >
+                  DekuDeals
+                </a>{" "}
+                collection URL. Imports merge into this library; separate Deku
+                lists are not recreated here.
+              </p>
+
+              <form
+                onSubmit={handleCollectionImport}
+                className="flex flex-col gap-4"
+                aria-busy={importing}
+              >
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="deku-collection-url"
+                    className="font-display text-xs tracking-widest"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    COLLECTION URL
+                  </label>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                    <input
+                      id="deku-collection-url"
+                      type="url"
+                      name="collection_url"
+                      autoComplete="off"
+                      placeholder="https://www.dekudeals.com/collection/…"
+                      value={collectionUrl}
+                      onChange={(ev) => setCollectionUrl(ev.target.value)}
+                      disabled={importing}
+                      className="min-h-11 w-full flex-1 rounded-md border px-3 py-2.5 text-sm outline-none transition focus:ring-2 disabled:opacity-60"
+                      style={{
+                        background: "var(--bg-elevated)",
+                        borderColor: "var(--border-subtle)",
+                        color: "var(--text-primary)",
+                        caretColor: "var(--accent)",
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={importing || !collectionUrl.trim()}
+                      className="font-display shrink-0 touch-manipulation rounded-md px-5 py-2.5 text-sm tracking-widest transition disabled:opacity-50"
+                      style={{
+                        background: "var(--accent)",
+                        color: "var(--bg-root)",
+                      }}
+                    >
+                      {importing ? "IMPORTING…" : "IMPORT"}
+                    </button>
+                  </div>
+                </div>
+
+                {importing && (
+                  <div
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-display"
+                    style={{
+                      background: "var(--bg-elevated)",
+                      color: "var(--text-muted)",
+                    }}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <span
+                      className="inline-block size-4 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+                      style={{ color: "var(--accent)" }}
+                      aria-hidden
+                    />
+                    Scraping your collection and adding games…
+                  </div>
+                )}
+
+                {importError && (
+                  <div
+                    className="rounded-md border px-3 py-2.5 text-sm font-display"
+                    style={{
+                      background:
+                        "color-mix(in srgb, var(--accent-secondary) 8%, transparent)",
+                      borderColor:
+                        "color-mix(in srgb, var(--accent-secondary) 30%, transparent)",
+                      color: "var(--accent-secondary)",
+                    }}
+                    role="alert"
+                  >
+                    {importError}
+                  </div>
+                )}
+
+                {importResult && !importing && (
+                  <div
+                    className="rounded-md border px-4 py-3 text-sm"
+                    style={{
+                      background: "var(--bg-elevated)",
+                      borderColor: "var(--border-subtle)",
+                      color: "var(--text-primary)",
+                    }}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <p className="font-display mb-2 tracking-wide text-xs text-[var(--text-muted)]">
+                      IMPORT SUMMARY
+                    </p>
+                    <ul className="mb-3 list-inside list-disc space-y-1">
+                      <li>
+                        <span className="font-semibold">
+                          {importResult.imported}
+                        </span>{" "}
+                        new title{importResult.imported !== 1 ? "s" : ""} added
+                      </li>
+                      <li>
+                        <span className="font-semibold">
+                          {importResult.skipped}
+                        </span>{" "}
+                        skipped (already in your library)
+                      </li>
+                      <li>
+                        <span className="font-semibold">
+                          {importResult.failed}
+                        </span>{" "}
+                        failed
+                      </li>
+                    </ul>
+                    {importResult.errors && importResult.errors.length > 0 && (
+                      <div
+                        className="mt-2 border-t pt-3 text-xs"
+                        style={{
+                          borderColor: "var(--border-subtle)",
+                          color: "var(--text-muted)",
+                        }}
+                      >
+                        <p className="mb-1 font-display tracking-wide">
+                          SAMPLE ERRORS
+                        </p>
+                        <ul className="space-y-1.5">
+                          {importResult.errors.slice(0, 5).map((item, idx) => (
+                            <li key={idx}>
+                              {item.url ? (
+                                <>
+                                  <span className="break-all">{item.url}</span>
+                                  {" — "}
+                                  {item.message}
+                                </>
+                              ) : (
+                                item.message
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </form>
+            </div>
           </div>
         ) : (
           <CollectionGrid
