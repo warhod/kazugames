@@ -6,14 +6,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatAuthError, isAuthEnvConfigured } from "@/lib/auth-errors";
 
+/** Only allow same-origin relative redirects after sign-in. */
+function sanitizeNextPath(raw: string): string {
+  const next = (raw || "/collection").trim();
+  if (!next.startsWith("/") || next.startsWith("//")) return "/collection";
+  if (next.includes("\0")) return "/collection";
+  if (next.length > 2048) return "/collection";
+  return next;
+}
+
 export default function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/collection";
+  const next = sanitizeNextPath(searchParams.get("next") ?? "/collection");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(() =>
+    searchParams.get("mode") === "signup" ? "signup" : "signin",
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -45,7 +56,7 @@ export default function LoginClient() {
 
     try {
       if (mode === "signup") {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: email.trim(),
           password,
         });
@@ -54,6 +65,11 @@ export default function LoginClient() {
             console.error("[auth signUp]", signUpError);
           }
           setError(formatAuthError(signUpError));
+          return;
+        }
+        if (signUpData.session) {
+          router.refresh();
+          router.push(next);
           return;
         }
         setMessage(
@@ -76,7 +92,7 @@ export default function LoginClient() {
       }
 
       router.refresh();
-      router.push(next.startsWith("/") ? next : "/collection");
+      router.push(next);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
         console.error("[auth]", err);
@@ -98,6 +114,18 @@ export default function LoginClient() {
         >
           {mode === "signin" ? "Sign in" : "Create account"}
         </h1>
+
+        {mode === "signup" &&
+          next.includes("/groups") &&
+          next.includes("join=") && (
+            <p
+              className="mb-4 text-center text-[11px] font-display tracking-wide"
+              style={{ color: "var(--text-muted)" }}
+            >
+              You&apos;re joining a friend&apos;s group. Create an account or sign in, then
+              you&apos;ll return to finish joining.
+            </p>
+          )}
 
         {process.env.NODE_ENV === "development" && envOk && (
           <p

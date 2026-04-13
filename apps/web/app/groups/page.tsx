@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { DbGroup, DbGameLoan, DbGroupMemberView, DbLendableGameRow } from '@/lib/database.types';
+import { parseGroupInviteFromLocation } from '@/lib/group-invite';
 import { createClient } from '@/lib/supabase/client';
 import GroupPanel from '@/components/GroupPanel';
 
@@ -29,6 +30,7 @@ export default function GroupsPage() {
   const [joinGroupId, setJoinGroupId] = useState('');
   const [joinInviteCode, setJoinInviteCode] = useState('');
   const [joining, setJoining] = useState(false);
+  const [redirectingToLogin, setRedirectingToLogin] = useState(false);
 
   const fetchGroups = useCallback(async () => {
     try {
@@ -81,32 +83,37 @@ export default function GroupsPage() {
   }, []);
 
   useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+    async function bootstrap() {
+      const { join, invite, hasInviteDeepLink } = parseGroupInviteFromLocation(window.location);
 
-    const params = new URLSearchParams(window.location.search);
-    const join = params.get('join')?.trim() ?? '';
-    const rawHash = window.location.hash.replace(/^#/, '');
-    const inviteMatch = rawHash.match(/^invite=(.*)$/);
-    const inviteEncoded = inviteMatch?.[1];
-    let invite = '';
-    if (inviteEncoded) {
-      try {
-        invite = decodeURIComponent(inviteEncoded);
-      } catch {
-        invite = inviteEncoded;
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (cancelled) return;
+
+      if (hasInviteDeepLink && !user) {
+        setRedirectingToLogin(true);
+        const nextPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        window.location.assign(
+          `/login?mode=signup&next=${encodeURIComponent(nextPath)}`,
+        );
+        return;
       }
+
+      if (join) setJoinGroupId(join);
+      if (invite) setJoinInviteCode(invite);
+      if (hasInviteDeepLink) setTab('join');
+
+      await fetchGroups();
     }
 
-    if (!join && !invite) return;
-
-    if (join) setJoinGroupId(join);
-    if (invite) setJoinInviteCode(invite);
-    setTab('join');
-  }, []);
+    void bootstrap();
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchGroups]);
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,6 +231,22 @@ export default function GroupsPage() {
     { key: 'my-groups', label: 'MY GROUPS' },
     { key: 'join', label: 'JOIN / CREATE' },
   ];
+
+  if (redirectingToLogin) {
+    return (
+      <div className="relative z-10 px-6 py-24 flex flex-col items-center justify-center text-center">
+        <p
+          className="font-display text-sm tracking-widest uppercase mb-3"
+          style={{ color: 'var(--accent)' }}
+        >
+          Sign up to join
+        </p>
+        <p className="text-sm max-w-sm" style={{ color: 'var(--text-muted)' }}>
+          Taking you to create an account so you can finish joining this group…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative z-10 px-6 py-8">

@@ -9,6 +9,7 @@ import type {
   DbLendableGameRow,
   DbPublicProfile,
 } from '@/lib/database.types';
+import { buildGroupInviteShareUrl } from '@/lib/group-invite';
 import GameCard from './GameCard';
 
 interface GroupDetail extends DbGroup {
@@ -50,17 +51,10 @@ function ownerLabel(profile: DbPublicProfile, ownerUserId: string) {
   return shortUserId(ownerUserId);
 }
 
-function buildGroupInviteShareUrl(groupId: string, inviteCode: string) {
-  if (typeof window === 'undefined') return '';
-  const u = new URL(`${window.location.origin}/groups`);
-  u.searchParams.set('join', groupId);
-  u.hash = `invite=${encodeURIComponent(inviteCode)}`;
-  return u.href;
-}
-
 function buildInviteShareClipboardText(groupName: string, groupId: string, inviteCode: string) {
-  const link = buildGroupInviteShareUrl(groupId, inviteCode);
-  return `Join my group "${groupName}" on Kazu Games — open this link while signed in, then confirm Join:\n\n${link}`;
+  if (typeof window === 'undefined') return '';
+  const link = buildGroupInviteShareUrl(window.location.origin, groupId, inviteCode);
+  return `Join my group "${groupName}" on Kazu Games — open the link, create a free account (or sign in), then tap Join:\n\n${link}`;
 }
 
 function safeHttpsUrl(url: string | null): string | null {
