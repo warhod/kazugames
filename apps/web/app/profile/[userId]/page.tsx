@@ -160,18 +160,6 @@ export default function MemberProfilePage() {
               </p>
             </div>
 
-            <div>
-              <p
-                className="text-[10px] font-display tracking-widest uppercase mb-1"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                User ID
-              </p>
-              <p className="text-xs font-mono break-all" style={{ color: 'var(--text-primary)' }}>
-                {row.user_id}
-              </p>
-            </div>
-
             {row.friend_code?.trim() && (
               <div>
                 <p
