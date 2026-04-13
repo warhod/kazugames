@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SearchBar from "@/components/SearchBar";
 import CollectionGrid from "@/components/CollectionGrid";
+import { getFeaturedHottestGames } from "@/lib/featured-hottest-deals";
 
 export const metadata: Metadata = {
   title: "KazuGames — Switch collections & friend lending",
@@ -8,65 +9,8 @@ export const metadata: Metadata = {
     "Discover Nintendo Switch games, track your collection, and lend titles inside your friend group.",
 };
 
-const FEATURED_GAMES = [
-  {
-    id: "1",
-    title: "The Legend of Zelda: Tears of the Kingdom",
-    deku_url:
-      "https://www.dekudeals.com/items/the-legend-of-zelda-tears-of-the-kingdom",
-    image_url: null,
-    current_price: 51.99,
-    msrp: 69.99,
-    platform: "Switch",
-  },
-  {
-    id: "2",
-    title: "Super Mario Odyssey",
-    deku_url: "https://www.dekudeals.com/items/super-mario-odyssey",
-    image_url: null,
-    current_price: 39.99,
-    msrp: 59.99,
-    platform: "Switch",
-  },
-  {
-    id: "3",
-    title: "Mario Kart 8 Deluxe",
-    deku_url: "https://www.dekudeals.com/items/mario-kart-8-deluxe",
-    image_url: null,
-    current_price: 49.99,
-    msrp: 59.99,
-    platform: "Switch",
-  },
-  {
-    id: "4",
-    title: "Metroid Prime Remastered",
-    deku_url: "https://www.dekudeals.com/items/metroid-prime-remastered",
-    image_url: null,
-    current_price: 29.99,
-    msrp: 39.99,
-    platform: "Switch",
-  },
-  {
-    id: "5",
-    title: "Fire Emblem Engage",
-    deku_url: "https://www.dekudeals.com/items/fire-emblem-engage",
-    image_url: null,
-    current_price: 35.99,
-    msrp: 59.99,
-    platform: "Switch",
-  },
-  {
-    id: "6",
-    title: "Pikmin 4",
-    deku_url: "https://www.dekudeals.com/items/pikmin-4",
-    image_url: null,
-    current_price: 44.99,
-    msrp: 59.99,
-    platform: "Switch",
-  },
-];
-
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredGames = await getFeaturedHottestGames();
   return (
     <div className="relative z-10">
       {/* ── HERO ─────────────────────────────────── */}
@@ -157,7 +101,7 @@ export default function HomePage() {
               FEATURED TITLES
             </span>
           </div>
-          <CollectionGrid games={FEATURED_GAMES} />
+          <CollectionGrid games={featuredGames} />
         </div>
       </section>
 
