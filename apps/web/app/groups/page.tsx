@@ -30,7 +30,9 @@ export default function GroupsPage() {
   const [joinGroupId, setJoinGroupId] = useState('');
   const [joinInviteCode, setJoinInviteCode] = useState('');
   const [joining, setJoining] = useState(false);
-  const [redirectingToLogin, setRedirectingToLogin] = useState(false);
+  const [redirectingToLogin, setRedirectingToLogin] = useState<
+    false | 'invite' | 'signin'
+  >(false);
 
   const fetchGroups = useCallback(async () => {
     try {
@@ -93,12 +95,13 @@ export default function GroupsPage() {
 
       if (cancelled) return;
 
-      if (hasInviteDeepLink && !user) {
-        setRedirectingToLogin(true);
+      if (!user) {
+        setRedirectingToLogin(hasInviteDeepLink ? 'invite' : 'signin');
         const nextPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-        window.location.assign(
-          `/login?mode=signup&next=${encodeURIComponent(nextPath)}`,
-        );
+        const qs = new URLSearchParams();
+        qs.set('next', nextPath);
+        if (hasInviteDeepLink) qs.set('mode', 'signup');
+        window.location.assign(`/login?${qs.toString()}`);
         return;
       }
 
@@ -233,16 +236,19 @@ export default function GroupsPage() {
   ];
 
   if (redirectingToLogin) {
+    const invite = redirectingToLogin === 'invite';
     return (
       <div className="relative z-10 px-6 py-24 flex flex-col items-center justify-center text-center">
         <p
           className="font-display text-sm tracking-widest uppercase mb-3"
           style={{ color: 'var(--accent)' }}
         >
-          Sign up to join
+          {invite ? 'Sign up to join' : 'Sign in required'}
         </p>
         <p className="text-sm max-w-sm" style={{ color: 'var(--text-muted)' }}>
-          Taking you to create an account so you can finish joining this group…
+          {invite
+            ? 'Taking you to create an account so you can finish joining this group…'
+            : 'Taking you to sign in. Afterward you’ll return here to manage groups.'}
         </p>
       </div>
     );
@@ -257,7 +263,7 @@ export default function GroupsPage() {
             className="text-3xl md:text-4xl font-black font-display uppercase tracking-tighter mb-2"
             style={{ color: 'var(--accent)' }}
           >
-            GROUPS
+            MY GROUPS
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Create squads, share collections, and borrow games from friends.

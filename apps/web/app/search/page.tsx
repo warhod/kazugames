@@ -84,8 +84,7 @@ function SearchContent() {
               className="text-sm max-w-xl mb-2"
               style={{ color: "var(--text-muted)" }}
             >
-              Paste a DekuDeals item URL for the most reliable match. You can
-              try a title search below, but live results are often empty.
+              Look up games by title or paste a DekuDeals game URL for the best match.
             </p>
             {!loading && q && (
               <div className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -96,10 +95,10 @@ function SearchContent() {
                 </p>
                 {games.length === 0 && !isDekuItemUrl(q) && (
                   <p className="text-xs mt-2 max-w-md leading-relaxed">
-                    If you have the game open on DekuDeals, copy the page URL
-                    (it includes <code className="text-[11px]">/items/</code>)
-                    and use LOAD from the home search bar—or paste it here and
-                    submit to go to the item page.
+                    Copy the game&apos;s page URL from your browser (look for{" "}
+                    <code className="text-[11px]">/items/</code> in the address
+                    bar), then use <strong className="font-display">Load</strong>{" "}
+                    on the home search bar—or paste it here and submit.
                   </p>
                 )}
               </div>
@@ -139,16 +138,16 @@ function SearchContent() {
               className="font-display text-xl mb-2 tracking-widest"
               style={{ color: "var(--accent)" }}
             >
-              PASTE A DEKU ITEM LINK
+              PASTE A DEKUDEALS GAME URL
             </h3>
             <p
               className="text-sm max-w-sm mx-auto leading-relaxed"
               style={{ color: "var(--text-muted)" }}
             >
-              Open a game on dekudeals.com, copy the URL from the address bar
+              Open the game&apos;s catalog page in your browser, copy the URL
               (it should contain <code className="text-[11px]">/items/</code>),
-              and paste it in the field above—then press LOAD. You can try a
-              title search instead, but it may return no results.
+              paste it above, then press <strong className="font-display">Load</strong>.
+              You can try a title search, but results vary.
             </p>
           </div>
         )}

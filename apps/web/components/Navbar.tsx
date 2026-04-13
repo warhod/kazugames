@@ -9,8 +9,8 @@ import ThemeToggle from "./ThemeToggle";
 
 const navLinks = [
   { href: "/", label: "Discover" },
-  { href: "/collection", label: "Collection" },
-  { href: "/groups", label: "Groups" },
+  { href: "/collection", label: "My Collections" },
+  { href: "/groups", label: "My Groups" },
 ];
 
 const glassBarStyle = {
@@ -177,8 +177,13 @@ export default function Navbar() {
             <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 href="/profile"
-                className="max-w-[7rem] sm:max-w-[12.5rem] truncate text-[10px] font-display tracking-wide sm:tracking-widest uppercase shrink text-right"
-                style={{ color: "var(--accent)" }}
+                className="max-w-[7rem] sm:max-w-[12.5rem] truncate text-[10px] font-display tracking-wide sm:tracking-widest uppercase shrink rounded-full border px-3 py-1.5 text-center transition hover:opacity-90"
+                style={{
+                  color: "var(--accent)",
+                  borderColor: "var(--border-subtle)",
+                  background: "var(--bg-elevated)",
+                  boxShadow: "0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent)",
+                }}
                 title={
                   navDisplayName && user.email
                     ? `${navDisplayName} — ${user.email} (profile)`
@@ -199,7 +204,10 @@ export default function Navbar() {
               </button>
             </div>
           ) : (
-            <Link href="/login" className="btn-neon btn-neon-cyan text-xs">
+            <Link
+              href="/login"
+              className="btn-neon btn-neon-cyan text-xs inline-flex min-w-[5.75rem] items-center justify-center text-center"
+            >
               Sign In
             </Link>
           )}

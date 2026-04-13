@@ -329,6 +329,7 @@ export default function GroupPanel({
                       current_price={ug.game.current_price}
                       msrp={ug.game.msrp}
                       platform={ug.game.platform}
+                      showPrices={false}
                     />
                     {!isSelf && onRequestLoan && (
                       <div className="absolute bottom-3 left-3 right-3">

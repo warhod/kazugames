@@ -24,6 +24,8 @@ export interface GameCardProps {
   showStatus?: boolean;
   /** Main link to `/game?...`. Default fits search / featured / borrow contexts. */
   primaryLinkLabel?: string;
+  /** When false, hides sale badge and price row (e.g. group lending). Default true. */
+  showPrices?: boolean;
 }
 
 const STATUS_CONFIG: Record<
@@ -65,6 +67,7 @@ export default function GameCard({
   status,
   showStatus = false,
   primaryLinkLabel = "VIEW DETAILS",
+  showPrices = true,
 }: GameCardProps) {
   const [imgError, setImgError] = useState(false);
   const statusCfg = status ? STATUS_CONFIG[status] : null;
@@ -99,7 +102,7 @@ export default function GameCard({
         )}
 
         {/* Discount badge */}
-        {current_price !== null && msrp !== null && (
+        {showPrices && current_price !== null && msrp !== null && (
           <DiscountBadge current={current_price} msrp={msrp} />
         )}
 
@@ -129,27 +132,29 @@ export default function GameCard({
         </h3>
 
         {/* Price row */}
-        <div className="flex items-end gap-2">
-          {current_price !== null ? (
-            <>
+        {showPrices && (
+          <div className="flex items-end gap-2">
+            {current_price !== null ? (
+              <>
+                <span
+                  className={`price-badge ${msrp && current_price < msrp ? "price-badge-sale" : ""}`}
+                >
+                  ${current_price.toFixed(2)}
+                </span>
+                {msrp && current_price < msrp && (
+                  <span className="price-msrp-strike">${msrp.toFixed(2)}</span>
+                )}
+              </>
+            ) : (
               <span
-                className={`price-badge ${msrp && current_price < msrp ? "price-badge-sale" : ""}`}
+                className="text-[10px] font-display"
+                style={{ color: "var(--text-muted)" }}
               >
-                ${current_price.toFixed(2)}
+                AVAILABILITY UNKNOWN
               </span>
-              {msrp && current_price < msrp && (
-                <span className="price-msrp-strike">${msrp.toFixed(2)}</span>
-              )}
-            </>
-          ) : (
-            <span
-              className="text-[10px] font-display"
-              style={{ color: "var(--text-muted)" }}
-            >
-              AVAILABILITY UNKNOWN
-            </span>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Status + lendable (derived from status on collection) */}
         {showStatus && statusCfg && (
@@ -178,8 +183,8 @@ export default function GameCard({
             target="_blank"
             rel="noopener noreferrer"
             className="btn-neon btn-neon-cyan text-[10px] flex items-center justify-center p-2"
-            title="Open on DekuDeals"
-            aria-label="Open on DekuDeals"
+            title="Open game page in new tab"
+            aria-label="Open game page in new tab"
           >
             <svg
               className="w-3 h-3"

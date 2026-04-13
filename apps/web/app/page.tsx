@@ -5,7 +5,7 @@ import CollectionGrid from "@/components/CollectionGrid";
 export const metadata: Metadata = {
   title: "KazuGames — Switch collections & friend lending",
   description:
-    "Discover Nintendo Switch games, track your collection, and lend titles inside your friend group. Catalog data from DekuDeals.",
+    "Discover Nintendo Switch games, track your collection, and lend titles inside your friend group.",
 };
 
 const FEATURED_GAMES = [
@@ -100,7 +100,7 @@ export default function HomePage() {
             className="w-1.5 h-1.5 rounded-full animate-pulse"
             style={{ background: "var(--accent)" }}
           />
-          DEKU CATALOG & PRICES
+          SWITCH GAME CATALOG
         </div>
 
         {/* Main headline */}
@@ -125,7 +125,7 @@ export default function HomePage() {
           {[
             "Friend Groups",
             "Game Lending",
-            "Deku-backed catalog",
+            "Lookup & add games",
             "Wishlist & loans",
           ].map((feat) => (
             <span
@@ -154,7 +154,7 @@ export default function HomePage() {
               <span style={{ color: "var(--accent)" }}>★</span> FEATURED GAMES
             </h2>
             <span className="text-[10px] font-display text-text-muted tracking-[0.3em] uppercase">
-              CATALOG FROM DEKUDEALS
+              FEATURED TITLES
             </span>
           </div>
           <CollectionGrid games={FEATURED_GAMES} />
@@ -175,7 +175,7 @@ export default function HomePage() {
               {
                 step: "01",
                 title: "SEARCH & TRACK",
-                desc: "Search the DekuDeals catalog for Switch games. Add titles to your collection in one click.",
+                desc: "Look up Switch games and add titles to your collection in one click.",
               },
               {
                 step: "02",

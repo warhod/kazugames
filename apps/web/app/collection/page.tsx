@@ -220,7 +220,7 @@ export default function CollectionPage() {
             className="text-3xl md:text-4xl font-black font-display uppercase tracking-tighter mb-2"
             style={{ color: "var(--accent)" }}
           >
-            COLLECTION
+            MY COLLECTIONS
           </h1>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             {total} title{total !== 1 ? "s" : ""} in your collection

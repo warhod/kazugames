@@ -50,10 +50,10 @@ export default function SearchBar({ initialValue = "" }: SearchBarProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Enter a game title or DekuDeals item URL"
+            placeholder="Search for games"
             className="input-neon input-neon-matrix pl-14 pr-4 py-3 text-base w-full text-left"
             disabled={loading}
-            aria-label="Enter a game title or DekuDeals item URL"
+            aria-label="Search games"
             aria-describedby={
               showTitleSearchHint ? "search-bar-title-hint" : undefined
             }
@@ -82,8 +82,8 @@ export default function SearchBar({ initialValue = "" }: SearchBarProps) {
           className="text-xs pl-1 leading-snug"
           style={{ color: "var(--text-muted)" }}
         >
-          Title search often returns nothing. For a reliable match, paste the
-          item link from DekuDeals.
+          For the most reliable match, paste the game&apos;s DekuDeals URL (it should
+          contain <code className="text-[11px]">/items/</code>).
         </p>
       )}
     </form>
