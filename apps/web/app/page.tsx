@@ -44,7 +44,7 @@ export default async function HomePage() {
             className="w-1.5 h-1.5 rounded-full animate-pulse"
             style={{ background: "var(--accent)" }}
           />
-          SWITCH GAME CATALOG
+          YOUR SWITCH LIBRARY
         </div>
 
         {/* Main headline */}

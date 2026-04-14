@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "./ThemeToggle";
@@ -70,6 +70,138 @@ function MainNavLink({
     >
       {label}
     </Link>
+  );
+}
+
+const ACCOUNT_MENU_ID = "navbar-account-menu";
+
+/** Fixed row height so header, Edit Profile, and Log out align. */
+const ACCOUNT_MENU_ROW_H = "h-12";
+
+const accountMenuHeaderClass = `${ACCOUNT_MENU_ROW_H} flex w-full shrink-0 flex-col justify-center gap-0.5 overflow-hidden rounded-md border px-3 font-display text-xs font-semibold uppercase tracking-wide`;
+
+const accountMenuActionClass = `${ACCOUNT_MENU_ROW_H} w-full !items-center !justify-center !px-3 !py-0 !text-xs`;
+
+function UserAccountMenu({
+  user,
+  navDisplayName,
+  pathname,
+  onSignOut,
+}: {
+  user: User;
+  navDisplayName: string | null;
+  pathname: string;
+  onSignOut: () => void | Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocPointerDown = (e: PointerEvent) => {
+      const el = wrapRef.current;
+      if (el && !el.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", onDocPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onDocPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const triggerLabel = navDisplayName ?? user.email ?? "Profile";
+  const headerPrimary = navDisplayName?.trim() || user.email || "Profile";
+  const title =
+    navDisplayName && user.email
+      ? `${navDisplayName} — ${user.email} (account menu)`
+      : user.email
+        ? `${user.email} (account menu)`
+        : "Account menu";
+
+  return (
+    <div ref={wrapRef} className="relative shrink-0">
+      <button
+        type="button"
+        id="navbar-account-trigger"
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-controls={ACCOUNT_MENU_ID}
+        onClick={() => setOpen((v) => !v)}
+        className="max-w-[7rem] sm:max-w-[12.5rem] truncate text-[10px] font-display tracking-wide sm:tracking-widest uppercase shrink rounded-full border px-3 py-1.5 text-center transition hover:opacity-90"
+        style={{
+          color: "var(--accent)",
+          borderColor: "var(--border-subtle)",
+          background: "var(--bg-elevated)",
+          boxShadow: "0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent)",
+        }}
+        title={title}
+        aria-label={`Account menu for ${triggerLabel}`}
+      >
+        {triggerLabel}
+      </button>
+      {open ? (
+        <div
+          id={ACCOUNT_MENU_ID}
+          role="region"
+          aria-label="Account"
+          className="absolute right-0 top-[calc(100%+0.35rem)] z-[60] flex min-w-[11.5rem] flex-col gap-2 overflow-hidden rounded-lg border p-2 shadow-lg"
+          style={{
+            borderColor: "var(--border-subtle)",
+            background: "var(--bg-elevated)",
+            boxShadow:
+              "0 10px 28px color-mix(in srgb, var(--bg) 55%, transparent), 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent)",
+          }}
+        >
+          <div
+            className={accountMenuHeaderClass}
+            style={{
+              borderColor: "var(--border-subtle)",
+              background: "color-mix(in srgb, var(--bg-elevated) 100%, transparent)",
+              boxShadow: "0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent)",
+            }}
+          >
+            <p className="truncate leading-tight" style={{ color: "var(--accent)" }}>
+              {headerPrimary}
+            </p>
+            {navDisplayName?.trim() && user.email ? (
+              <p
+                className="truncate font-display text-[10px] font-semibold normal-case leading-tight tracking-normal"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {user.email}
+              </p>
+            ) : null}
+          </div>
+          <Link
+            href="/profile"
+            className={`btn-neon btn-neon-cyan ${accountMenuActionClass}`}
+            onClick={() => setOpen(false)}
+          >
+            Edit Profile
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              void onSignOut();
+            }}
+            className={`btn-neon btn-neon-pink ${accountMenuActionClass}`}
+          >
+            LOG OUT
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -174,35 +306,12 @@ export default function Navbar() {
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <ThemeToggle />
           {user ? (
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link
-                href="/profile"
-                className="max-w-[7rem] sm:max-w-[12.5rem] truncate text-[10px] font-display tracking-wide sm:tracking-widest uppercase shrink rounded-full border px-3 py-1.5 text-center transition hover:opacity-90"
-                style={{
-                  color: "var(--accent)",
-                  borderColor: "var(--border-subtle)",
-                  background: "var(--bg-elevated)",
-                  boxShadow: "0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent)",
-                }}
-                title={
-                  navDisplayName && user.email
-                    ? `${navDisplayName} — ${user.email} (profile)`
-                    : user.email
-                      ? `${user.email} (profile)`
-                      : "Profile"
-                }
-                aria-label="Open profile"
-              >
-                {navDisplayName ?? user.email ?? "Profile"}
-              </Link>
-              <button
-                type="button"
-                onClick={() => void signOut()}
-                className="btn-neon btn-neon-pink text-xs"
-              >
-                Sign out
-              </button>
-            </div>
+            <UserAccountMenu
+              user={user}
+              navDisplayName={navDisplayName}
+              pathname={pathname}
+              onSignOut={signOut}
+            />
           ) : (
             <Link
               href="/login"
