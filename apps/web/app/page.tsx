@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import SearchBar from "@/components/SearchBar";
 import CollectionGrid from "@/components/CollectionGrid";
 import { getFeaturedHottestGames } from "@/lib/featured-hottest-deals";
@@ -32,22 +33,6 @@ export default async function HomePage() {
         />
 
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-7">
-          {/* Eyebrow */}
-          <div
-            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-display tracking-[0.2em]"
-            style={{
-              borderColor: "var(--border-subtle)",
-              background: "var(--bg-elevated)",
-              color: "var(--accent)",
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full animate-pulse"
-              style={{ background: "var(--accent)" }}
-            />
-            YOUR SWITCH LIBRARY
-          </div>
-
           {/* Main headline */}
           <h1 className="text-5xl leading-none font-display font-black uppercase tracking-tighter md:text-7xl">
             <span style={{ color: "var(--accent)" }}>DISCOVER.</span>{" "}
@@ -55,47 +40,77 @@ export default async function HomePage() {
             <span style={{ color: "var(--text-primary)" }}>SHARE.</span>
           </h1>
 
-          {/* "How it works" between title and search */}
+          {/* Search */}
+          <div className="w-full max-w-2xl">
+            <Suspense
+              fallback={<div className="skeleton h-[50px] w-full rounded-md" />}
+            >
+              <SearchBar />
+            </Suspense>
+          </div>
+
+          {/* Supporting "how it works" strip */}
           <div
-            className="w-full rounded-lg border px-4 py-4"
+            className="w-full max-w-xl rounded-lg border px-3 py-2.5 sm:px-4"
             style={{
-              borderColor: "var(--border-subtle)",
-              background: "color-mix(in srgb, var(--bg-elevated) 90%, transparent)",
+              borderColor:
+                "color-mix(in srgb, var(--border-subtle) 82%, transparent)",
+              background:
+                "color-mix(in srgb, var(--bg-elevated) 78%, transparent)",
+              boxShadow:
+                "0 1px 12px color-mix(in srgb, var(--bg) 25%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--text-muted) 10%, transparent)",
             }}
           >
-            <h2
-              className="mb-3 text-lg font-display font-bold uppercase tracking-[0.18em] sm:text-xl"
-              style={{ color: "var(--text-primary)" }}
+            <p
+              className="mb-2 text-[18px] font-display font-semibold uppercase tracking-[0.2em]"
+              style={{ color: "var(--text-muted)" }}
             >
-              <span style={{ color: "var(--accent)" }}>⬡</span> HOW IT WORKS
-            </h2>
-            <div
-              className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3"
-              style={{ color: "var(--text-primary)" }}
-            >
+              <span
+                className="inline-block"
+                style={{
+                  color:
+                    "color-mix(in srgb, var(--accent) 72%, var(--text-muted))",
+                  textShadow:
+                    "0 0 4px color-mix(in srgb, var(--accent) 35%, transparent)",
+                }}
+              >
+                ⬡
+              </span>{" "}
+              How It Works
+            </p>
+            <div className="flex flex-col items-center gap-1.5 text-center md:flex-row md:justify-center md:gap-2">
               {[
-                "Search for a Nintendo Switch game",
-                "Add it to your collection",
-                "Share it with your group",
-              ].map((step, idx) => (
-                <div key={step} className="flex flex-col items-center gap-1">
+                "01 Search for a Nintendo Switch game",
+                "02 Add games to your collection",
+                "03 Lend games to your friends",
+              ].map((item, idx) => (
+                <div key={item} className="inline-flex items-center gap-2">
                   <span
-                    className="font-display text-sm font-semibold uppercase tracking-[0.18em]"
-                    style={{ color: "var(--accent)" }}
+                    className="inline-flex items-center rounded-full border px-2 py-1 text-[12px] font-display uppercase tracking-[0.13em]"
+                    style={{
+                      color:
+                        "color-mix(in srgb, var(--text-primary) 86%, var(--text-muted))",
+                      borderColor:
+                        "color-mix(in srgb, var(--border-subtle) 70%, transparent)",
+                      background:
+                        "color-mix(in srgb, var(--bg-elevated) 72%, transparent)",
+                    }}
                   >
-                    {`0${idx + 1}`}
+                    {item}
                   </span>
-                  <span className="font-display text-xs uppercase tracking-[0.11em] sm:text-[13px]">
-                    {step}
-                  </span>
+                  {idx < 2 ? (
+                    <span
+                      aria-hidden
+                      className="hidden h-px w-4 rounded-full md:inline-block"
+                      style={{
+                        background:
+                          "linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-muted) 65%, transparent), transparent)",
+                      }}
+                    />
+                  ) : null}
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Search */}
-          <div className="w-full max-w-2xl">
-            <SearchBar />
           </div>
         </div>
       </section>
