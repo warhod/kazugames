@@ -9,6 +9,8 @@ interface CollectionGridProps {
   loading?: boolean;
   /** Passed through to each `GameCard` (e.g. `EDIT / REMOVE` on /collection). */
   primaryLinkLabel?: string;
+  /** Optional card interaction handler for quick actions in lists (e.g. search). */
+  onCardClick?: (game: GameCardProps) => void;
 }
 
 function SkeletonCard() {
@@ -29,6 +31,7 @@ export default function CollectionGrid({
   showStatus = false,
   loading = false,
   primaryLinkLabel,
+  onCardClick,
 }: CollectionGridProps) {
   if (loading) {
     return (
@@ -72,6 +75,8 @@ export default function CollectionGrid({
           {...game}
           showStatus={showStatus}
           primaryLinkLabel={primaryLinkLabel}
+          onPrimaryAction={onCardClick ? () => onCardClick(game) : undefined}
+          onCardClick={onCardClick ? () => onCardClick(game) : undefined}
         />
       ))}
     </div>

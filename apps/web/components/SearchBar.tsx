@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { isDekuItemUrl } from "@/lib/is-deku-item-url";
 
 interface SearchBarProps {
@@ -12,9 +12,12 @@ export default function SearchBar({ initialValue = "" }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setQuery(initialValue);
+    setLoading(false);
   }, [initialValue]);
 
   const trimmed = query.trim();
@@ -27,15 +30,27 @@ export default function SearchBar({ initialValue = "" }: SearchBarProps) {
       if (!trimmed) return;
 
       if (urlMode) {
+        const target = `/game?url=${encodeURIComponent(trimmed)}`;
+        const currentUrlParam = searchParams.get("url")?.trim() ?? "";
+        if (pathname === "/game" && currentUrlParam === trimmed) {
+          setLoading(false);
+          return;
+        }
         setLoading(true);
-        router.push(`/game?url=${encodeURIComponent(trimmed)}`);
+        router.push(target);
         return;
       }
 
+      const target = `/search?q=${encodeURIComponent(trimmed)}`;
+      const currentQueryParam = searchParams.get("q")?.trim() ?? "";
+      if (pathname === "/search" && currentQueryParam === trimmed) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      router.push(target);
     },
-    [trimmed, urlMode, router],
+    [trimmed, urlMode, router, pathname, searchParams],
   );
 
   return (
@@ -50,7 +65,7 @@ export default function SearchBar({ initialValue = "" }: SearchBarProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for games"
+            placeholder="Enter a game title"
             className="input-neon input-neon-matrix pl-14 pr-4 py-3 text-base w-full text-left"
             disabled={loading}
             aria-label="Search games"
@@ -82,8 +97,8 @@ export default function SearchBar({ initialValue = "" }: SearchBarProps) {
           className="text-xs pl-1 leading-snug"
           style={{ color: "var(--text-muted)" }}
         >
-          For the most reliable match, paste the game&apos;s DekuDeals URL (it should
-          contain <code className="text-[11px]">/items/</code>).
+          For the most reliable match, paste the game&apos;s DekuDeals URL (it
+          should contain <code className="text-[11px]">/items/</code>).
         </p>
       )}
     </form>

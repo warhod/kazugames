@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import CollectionGrid from "@/components/CollectionGrid";
+import GameCollectionModal from "@/components/GameCollectionModal";
 import SearchBar from "@/components/SearchBar";
 import type { GameCardProps } from "@/components/GameCard";
 import { isDekuItemUrl } from "@/lib/is-deku-item-url";
@@ -36,6 +37,7 @@ function SearchContent() {
   const [games, setGames] = useState<GameCardProps[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeGame, setActiveGame] = useState<GameCardProps | null>(null);
 
   useEffect(() => {
     if (!q.trim()) return;
@@ -67,6 +69,10 @@ function SearchContent() {
       cancelled = true;
     };
   }, [q]);
+
+  const openGameModal = (game: GameCardProps) => {
+    setActiveGame(game);
+  };
 
   return (
     <div className="relative z-10 px-6 py-8">
@@ -153,8 +159,14 @@ function SearchContent() {
         )}
 
         {/* Results grid */}
-        <CollectionGrid games={games} loading={loading} />
+        <CollectionGrid
+          games={games}
+          loading={loading}
+          onCardClick={openGameModal}
+        />
       </div>
+
+      <GameCollectionModal game={activeGame} onClose={() => setActiveGame(null)} />
     </div>
   );
 }

@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { GameStatus, DbUserGame } from "@/lib/database.types";
 import CollectionGrid from "@/components/CollectionGrid";
+import type { GameCardProps } from "@/components/GameCard";
+import GameCollectionModal from "@/components/GameCollectionModal";
+import { createClient } from "@/lib/supabase/client";
 
 type FilterTab = "all" | GameStatus | "lendable";
 
@@ -62,6 +65,8 @@ export default function CollectionPage() {
   const [importError, setImportError] = useState<string | null>(null);
   const [importResult, setImportResult] =
     useState<CollectionImportResult | null>(null);
+  const [activeGame, setActiveGame] = useState<GameCardProps | null>(null);
+  const [lentOutGameIds, setLentOutGameIds] = useState<Set<string>>(new Set());
   /** Full import panel: always open when collection is empty; collapsible when user already has titles. */
   const [importExpanded, setImportExpanded] = useState(false);
   const prevGameCount = useRef<number | null>(null);
@@ -173,6 +178,39 @@ export default function CollectionPage() {
   }, [fetchCollection]);
 
   useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user?.id) return;
+        const res = await fetch("/api/loans");
+        if (!res.ok) return;
+        const rows = (await res.json()) as Array<{
+          game_id: string;
+          owner_id: string;
+          status: string;
+        }>;
+        if (cancelled) return;
+        const ids = new Set(
+          rows
+            .filter((r) => r.status === "approved" && r.owner_id === user.id)
+            .map((r) => r.game_id),
+        );
+        setLentOutGameIds(ids);
+      } catch {
+        if (!cancelled) setLentOutGameIds(new Set());
+      }
+    };
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (loading) return;
     const maxPage = Math.max(1, Math.ceil(filteredTotal / perPage));
     if (page > maxPage) setPage(maxPage);
@@ -202,6 +240,7 @@ export default function CollectionPage() {
       msrp: ug.game!.msrp,
       platform: ug.game!.platform,
       status: ug.status,
+      loanBadgeLabel: lentOutGameIds.has(ug.game_id) ? "LENT OUT" : undefined,
     }));
 
   const signInRequired =
@@ -611,7 +650,7 @@ export default function CollectionPage() {
           <CollectionGrid
             games={[]}
             loading={true}
-            primaryLinkLabel="EDIT / REMOVE"
+            primaryLinkLabel="MANAGE COLLECTION"
           />
         ) : filteredTotal === 0 && filter !== "all" ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -632,10 +671,12 @@ export default function CollectionPage() {
           <CollectionGrid
             games={gamesForGrid}
             showStatus={true}
-            primaryLinkLabel="EDIT / REMOVE"
+            primaryLinkLabel="MANAGE COLLECTION"
+            onCardClick={(game) => setActiveGame(game)}
           />
         )}
       </div>
+      <GameCollectionModal game={activeGame} onClose={() => setActiveGame(null)} />
     </div>
   );
 }

@@ -22,10 +22,16 @@ export interface GameCardProps {
   platform: string;
   status?: GameStatus;
   showStatus?: boolean;
-  /** Main link to `/game?...`. Default fits search / featured / borrow contexts. */
+  /** Main link to `/game?...`. Defaults to collection-oriented CTA. */
   primaryLinkLabel?: string;
+  /** Optional in-place action handler (e.g. open modal) instead of route navigation. */
+  onPrimaryAction?: () => void;
+  /** Optional card click handler for touch-friendly workflows. */
+  onCardClick?: () => void;
   /** When false, hides sale badge and price row (e.g. group lending). Default true. */
   showPrices?: boolean;
+  /** Optional loan-state badge shown next to status chips (e.g. LENT / LENT OUT). */
+  loanBadgeLabel?: string;
 }
 
 const STATUS_CONFIG: Record<
@@ -66,14 +72,30 @@ export default function GameCard({
   platform,
   status,
   showStatus = false,
-  primaryLinkLabel = "VIEW DETAILS",
+  primaryLinkLabel = "ADD TO COLLECTION",
+  onPrimaryAction,
+  onCardClick,
   showPrices = true,
+  loanBadgeLabel,
 }: GameCardProps) {
   const [imgError, setImgError] = useState(false);
   const statusCfg = status ? STATUS_CONFIG[status] : null;
 
   return (
-    <article className="glass-card overflow-hidden flex flex-col group h-full">
+    <article
+      className={`glass-card overflow-hidden flex flex-col group h-full ${onCardClick ? "cursor-pointer focus-within:ring-2 focus-within:ring-offset-2" : ""}`}
+      onClick={onCardClick}
+      onKeyDown={(e) => {
+        if (!onCardClick) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onCardClick();
+        }
+      }}
+      tabIndex={onCardClick ? 0 : undefined}
+      role={onCardClick ? "button" : undefined}
+      aria-label={onCardClick ? `Open quick actions for ${title}` : undefined}
+    >
       {/* Cover image */}
       <div
         className="relative w-full overflow-hidden"
@@ -167,21 +189,39 @@ export default function GameCard({
                 🤲 Lendable
               </span>
             )}
+            {loanBadgeLabel && (
+              <span className="badge-status badge-lendable">{loanBadgeLabel}</span>
+            )}
           </div>
         )}
 
         {/* Actions */}
         <div className="mt-auto flex items-center gap-2 pt-2">
-          <Link
-            href={`/game?url=${encodeURIComponent(deku_url)}`}
-            className="btn-neon btn-neon-cyan flex-1 text-center text-[10px]"
-          >
-            {primaryLinkLabel}
-          </Link>
+          {onPrimaryAction ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPrimaryAction();
+              }}
+              className="btn-neon btn-neon-cyan flex-1 text-center text-[10px]"
+            >
+              {primaryLinkLabel}
+            </button>
+          ) : (
+            <Link
+              href={`/game?url=${encodeURIComponent(deku_url)}`}
+              onClick={(e) => e.stopPropagation()}
+              className="btn-neon btn-neon-cyan flex-1 text-center text-[10px]"
+            >
+              {primaryLinkLabel}
+            </Link>
+          )}
           <a
             href={deku_url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="btn-neon btn-neon-cyan text-[10px] flex items-center justify-center p-2"
             title="Open game page in new tab"
             aria-label="Open game page in new tab"
