@@ -5,7 +5,6 @@ import { lendableForStatus } from "@/lib/collection-lending";
 
 const GAME_STATUSES: GameStatus[] = [
   "owned",
-  "wishlist",
   "playing",
   "completed",
   "abandoned",
@@ -80,7 +79,6 @@ export async function GET(request: NextRequest) {
     const [
       total,
       owned,
-      wishlist,
       playing,
       completed,
       abandoned,
@@ -88,7 +86,6 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       countUserGames(supabase, user.id, (q) => q),
       countUserGames(supabase, user.id, (q) => q.eq("status", "owned")),
-      countUserGames(supabase, user.id, (q) => q.eq("status", "wishlist")),
       countUserGames(supabase, user.id, (q) => q.eq("status", "playing")),
       countUserGames(supabase, user.id, (q) => q.eq("status", "completed")),
       countUserGames(supabase, user.id, (q) => q.eq("status", "abandoned")),
@@ -97,7 +94,6 @@ export async function GET(request: NextRequest) {
 
     const status_counts: Record<GameStatus, number> = {
       owned,
-      wishlist,
       playing,
       completed,
       abandoned,
@@ -160,7 +156,6 @@ export async function POST(request: NextRequest) {
 
   const validStatuses: GameStatus[] = [
     "owned",
-    "wishlist",
     "playing",
     "completed",
     "abandoned",

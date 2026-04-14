@@ -18,7 +18,6 @@ export function mapDekuImportHintToGameStatus(
   switch (hint) {
     case "playing":
     case "completed":
-    case "wishlist":
       return hint;
     case "abandoned":
       // Deku "Abandoned" → DB `abandoned` → UI copy "Dropped"

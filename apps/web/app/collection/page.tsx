@@ -15,7 +15,6 @@ const PER_PAGE_OPTIONS: PerPage[] = [10, 20, 50, 100];
 
 const EMPTY_STATUS_COUNTS: Record<GameStatus, number> = {
   owned: 0,
-  wishlist: 0,
   playing: 0,
   completed: 0,
   abandoned: 0,
@@ -41,7 +40,6 @@ type CollectionImportResult = {
 const FILTER_TABS: { key: FilterTab; label: string; icon: string }[] = [
   { key: "all", label: "ALL", icon: "◈" },
   { key: "owned", label: "OWNED", icon: "✓" },
-  { key: "wishlist", label: "WISHLIST", icon: "♥" },
   { key: "playing", label: "PLAYING", icon: "▶" },
   { key: "completed", label: "COMPLETED", icon: "★" },
   { key: "abandoned", label: "DROPPED", icon: "⌛" },
@@ -261,8 +259,10 @@ export default function CollectionPage() {
           >
             MY COLLECTIONS
           </h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {total} title{total !== 1 ? "s" : ""} in your collection
+          <p className="text-md" style={{ color: "var(--text-muted)" }}>
+            You have {total} title{total !== 1 ? "s" : ""} in your collection.
+            Of these, {lendableCount} are lendable. Games that you are playing
+            are not considered lendable.
           </p>
         </div>
 
@@ -650,7 +650,7 @@ export default function CollectionPage() {
           <CollectionGrid
             games={[]}
             loading={true}
-            primaryLinkLabel="MANAGE COLLECTION"
+            primaryLinkLabel="EDIT / REMOVE"
           />
         ) : filteredTotal === 0 && filter !== "all" ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -671,12 +671,15 @@ export default function CollectionPage() {
           <CollectionGrid
             games={gamesForGrid}
             showStatus={true}
-            primaryLinkLabel="MANAGE COLLECTION"
+            primaryLinkLabel="EDIT / REMOVE"
             onCardClick={(game) => setActiveGame(game)}
           />
         )}
       </div>
-      <GameCollectionModal game={activeGame} onClose={() => setActiveGame(null)} />
+      <GameCollectionModal
+        game={activeGame}
+        onClose={() => setActiveGame(null)}
+      />
     </div>
   );
 }

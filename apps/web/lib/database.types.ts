@@ -1,4 +1,4 @@
-export type GameStatus = 'owned' | 'wishlist' | 'playing' | 'completed' | 'abandoned';
+export type GameStatus = 'owned' | 'playing' | 'completed' | 'abandoned';
 export type LoanStatus = 'requested' | 'approved' | 'declined' | 'returned';
 
 export interface DbGame {
@@ -44,6 +44,7 @@ export interface DbGameLoan {
   game_id: string;
   owner_id: string;
   borrower_id: string;
+  requested_by_id: string;
   group_id: string;
   status: LoanStatus;
   created_at: string;

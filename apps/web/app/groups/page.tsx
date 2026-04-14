@@ -175,8 +175,6 @@ export default function GroupsPage() {
   };
 
   const handleDeleteGroup = async (groupId: string) => {
-    if (!confirm('Delete this group? All members will be removed.')) return;
-
     try {
       const res = await fetch(`/api/groups/${groupId}`, { method: 'DELETE' });
       if (!res.ok && res.status !== 204) {
@@ -190,8 +188,6 @@ export default function GroupsPage() {
   };
 
   const handleRemoveMember = async (groupId: string, userId: string) => {
-    if (!confirm('Remove this member from the group?')) return;
-
     try {
       const res = await fetch(
         `/api/groups/${groupId}/members?user_id=${userId}`,
@@ -207,7 +203,12 @@ export default function GroupsPage() {
     }
   };
 
-  const handleRequestLoan = async (gameId: string, ownerId: string, groupId: string) => {
+  const handleRequestLoan = async (
+    gameId: string,
+    ownerId: string,
+    groupId: string,
+    borrowerId?: string,
+  ) => {
     try {
       const res = await fetch('/api/loans', {
         method: 'POST',
@@ -215,6 +216,7 @@ export default function GroupsPage() {
         body: JSON.stringify({
           game_id: gameId,
           owner_id: ownerId,
+          borrower_id: borrowerId,
           group_id: groupId,
         }),
       });
@@ -227,6 +229,23 @@ export default function GroupsPage() {
       await fetchGroups();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to request loan');
+    }
+  };
+
+  const handleAcceptLoan = async (loanId: string) => {
+    try {
+      const res = await fetch(`/api/loans/${loanId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'approved' }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to accept loan request');
+      }
+      await fetchGroups();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to accept loan request');
     }
   };
 
@@ -375,6 +394,7 @@ export default function GroupsPage() {
                       currentUserId={currentUserId}
                       loans={loans}
                       onRequestLoan={handleRequestLoan}
+                      onAcceptLoan={handleAcceptLoan}
                       onDeleteGroup={handleDeleteGroup}
                       onRemoveMember={handleRemoveMember}
                     />

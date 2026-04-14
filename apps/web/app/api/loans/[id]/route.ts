@@ -38,15 +38,17 @@ export async function PATCH(
 
   const isOwner = loan.owner_id === user.id;
   const isBorrower = loan.borrower_id === user.id;
+  const requesterId = loan.requested_by_id ?? loan.borrower_id;
+  const requesteeId = requesterId === loan.owner_id ? loan.borrower_id : loan.owner_id;
 
   if (!isOwner && !isBorrower) {
     return NextResponse.json({ error: 'Not a participant in this loan' }, { status: 403 });
   }
 
   if (status === 'approved' || status === 'declined') {
-    if (!isOwner) {
+    if (user.id !== requesteeId) {
       return NextResponse.json(
-        { error: 'Only the game owner can approve or decline' },
+        { error: 'Only the request recipient can approve or decline' },
         { status: 403 },
       );
     }

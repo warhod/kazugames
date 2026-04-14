@@ -10,7 +10,6 @@ type CollectionEntry = Pick<DbUserGame, 'id' | 'status' | 'lendable'>;
 
 const STATUSES: { value: GameStatus; label: string; icon: string }[] = [
   { value: 'owned',     label: 'Owned',     icon: '✓' },
-  { value: 'wishlist',  label: 'Wishlist',  icon: '♥' },
   { value: 'playing',   label: 'Playing',   icon: '▶' },
   { value: 'completed', label: 'Completed', icon: '★' },
   { value: 'abandoned', label: 'Dropped',   icon: '⌛' },
@@ -59,7 +58,7 @@ function GameContent() {
   const [error, setError] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
 
-  const [selectedStatus, setSelectedStatus] = useState<GameStatus>('owned');
+  const [selectedStatus, setSelectedStatus] = useState<GameStatus | ''>('');
   const [collectionEntry, setCollectionEntry] = useState<CollectionEntry | null>(null);
   const [membershipLoading, setMembershipLoading] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -138,7 +137,7 @@ function GameContent() {
   };
 
   const handleAddToCollection = async () => {
-    if (!game || adding) return;
+    if (!game || adding || !selectedStatus) return;
     setAdding(true);
     setCollectionErr(null);
 
@@ -171,6 +170,7 @@ function GameContent() {
         status: row.status,
         lendable: row.lendable,
       });
+      setSelectedStatus(row.status);
     } catch (e) {
       setCollectionErr(e instanceof Error ? e.message : 'Something went wrong');
     } finally {
@@ -236,7 +236,7 @@ function GameContent() {
       }
 
       setCollectionEntry(null);
-      setSelectedStatus('owned');
+      setSelectedStatus('');
     } catch (e) {
       setCollectionErr(e instanceof Error ? e.message : 'Failed to remove');
     } finally {
@@ -384,13 +384,18 @@ function GameContent() {
                   className="text-[10px] font-display tracking-[0.15em] uppercase mb-3"
                   style={{ color: 'var(--text-muted)' }}
                 >
-                  STATUS
+                  YOUR COLLECTION STATUS
                 </p>
 
                 {membershipLoading ? (
                   <div className="skeleton h-10 w-full max-w-xs rounded-md" />
                 ) : (
                   <div className="flex flex-col gap-3">
+                    {!collectionEntry && (
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        Choose a status, then add this game to your collection.
+                      </p>
+                    )}
                     <div className="flex flex-wrap items-center gap-3">
                       <select
                         value={selectedStatus}
@@ -406,6 +411,11 @@ function GameContent() {
                         className="input-neon text-xs py-2 px-3"
                         style={{ background: 'var(--bg-elevated)', width: 'auto' }}
                       >
+                        {!collectionEntry && (
+                          <option value="" disabled>
+                            Select status
+                          </option>
+                        )}
                         {STATUSES.map((s) => (
                           <option key={s.value} value={s.value}>
                             {s.icon} {s.label}
@@ -417,7 +427,7 @@ function GameContent() {
                         <button
                           type="button"
                           onClick={() => void handleAddToCollection()}
-                          disabled={adding}
+                          disabled={adding || !selectedStatus}
                           className="btn-neon btn-neon-solid text-xs px-6 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {adding ? (
@@ -425,6 +435,8 @@ function GameContent() {
                               <span className="w-3 h-3 rounded-full border-2 border-void border-t-transparent animate-spin" />
                               ADDING…
                             </span>
+                          ) : !selectedStatus ? (
+                            'SELECT STATUS TO ADD'
                           ) : (
                             '+ ADD TO COLLECTION'
                           )}

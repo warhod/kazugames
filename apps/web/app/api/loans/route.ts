@@ -29,9 +29,10 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { game_id, owner_id, group_id } = body as {
+  const { game_id, owner_id, borrower_id, group_id } = body as {
     game_id?: string;
     owner_id?: string;
+    borrower_id?: string;
     group_id?: string;
   };
 
@@ -42,21 +43,29 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (owner_id === user.id) {
+  const targetBorrowerId = borrower_id ?? user.id;
+
+  if (owner_id === targetBorrowerId) {
+    return NextResponse.json({ error: 'Owner and borrower must be different users' }, { status: 400 });
+  }
+
+  const isRequesterOwner = owner_id === user.id;
+  const isRequesterBorrower = targetBorrowerId === user.id;
+  if (!isRequesterOwner && !isRequesterBorrower) {
     return NextResponse.json(
-      { error: 'Cannot request a loan from yourself' },
-      { status: 400 },
+      { error: 'Requester must be either the owner or the borrower' },
+      { status: 403 },
     );
   }
 
-  const { data: borrowerMembership } = await supabase
+  const { data: requesterMembership } = await supabase
     .from('group_members')
     .select('id')
     .eq('group_id', group_id)
     .eq('user_id', user.id)
     .single();
 
-  if (!borrowerMembership) {
+  if (!requesterMembership) {
     return NextResponse.json(
       { error: 'You must be a member of the group' },
       { status: 403 },
@@ -73,6 +82,20 @@ export async function POST(request: NextRequest) {
   if (!ownerMembership) {
     return NextResponse.json(
       { error: 'Game owner is not a member of this group' },
+      { status: 400 },
+    );
+  }
+
+  const { data: borrowerMembership } = await supabase
+    .from('group_members')
+    .select('id')
+    .eq('group_id', group_id)
+    .eq('user_id', targetBorrowerId)
+    .single();
+
+  if (!borrowerMembership) {
+    return NextResponse.json(
+      { error: 'Borrower must be a member of this group' },
       { status: 400 },
     );
   }
@@ -112,7 +135,8 @@ export async function POST(request: NextRequest) {
     .insert({
       game_id,
       owner_id,
-      borrower_id: user.id,
+      borrower_id: targetBorrowerId,
+      requested_by_id: user.id,
       group_id,
       status: 'requested',
     })

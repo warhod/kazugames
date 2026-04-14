@@ -36,5 +36,4 @@ export type CollectionImportGameStatusHint =
   | 'playing'
   | 'completed'
   | 'abandoned'
-  | 'owned'
-  | 'wishlist';
+  | 'owned';

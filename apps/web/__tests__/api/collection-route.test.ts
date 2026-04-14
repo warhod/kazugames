@@ -28,7 +28,6 @@ describe('GET /api/collection', () => {
         { data: null, error: null, count: 0 },
         { data: null, error: null, count: 0 },
         { data: null, error: null, count: 0 },
-        { data: null, error: null, count: 0 },
         { data: null, error: null, count: 1 },
         { data: rows, error: null },
       ],

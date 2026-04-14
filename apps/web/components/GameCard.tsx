@@ -7,7 +7,6 @@ import { lendableForStatus } from "@/lib/collection-lending";
 
 export type GameStatus =
   | "owned"
-  | "wishlist"
   | "playing"
   | "completed"
   | "abandoned";
@@ -26,12 +25,16 @@ export interface GameCardProps {
   primaryLinkLabel?: string;
   /** Optional in-place action handler (e.g. open modal) instead of route navigation. */
   onPrimaryAction?: () => void;
+  /** Disabled state for in-place primary action button. */
+  primaryActionDisabled?: boolean;
   /** Optional card click handler for touch-friendly workflows. */
   onCardClick?: () => void;
   /** When false, hides sale badge and price row (e.g. group lending). Default true. */
   showPrices?: boolean;
   /** Optional loan-state badge shown next to status chips (e.g. LENT / LENT OUT). */
   loanBadgeLabel?: string;
+  /** When false, hides bottom action row (used when parent overlays custom CTA). */
+  showActions?: boolean;
 }
 
 const STATUS_CONFIG: Record<
@@ -39,7 +42,6 @@ const STATUS_CONFIG: Record<
   { label: string; className: string; icon: string }
 > = {
   owned: { label: "Owned", className: "badge-owned", icon: "✓" },
-  wishlist: { label: "Wishlist", className: "badge-wishlist", icon: "♥" },
   playing: { label: "Playing", className: "badge-playing", icon: "▶" },
   completed: { label: "Completed", className: "badge-completed", icon: "★" },
   abandoned: { label: "Abandoned", className: "badge-abandoned", icon: "⌛" },
@@ -74,9 +76,11 @@ export default function GameCard({
   showStatus = false,
   primaryLinkLabel = "ADD TO COLLECTION",
   onPrimaryAction,
+  primaryActionDisabled = false,
   onCardClick,
   showPrices = true,
   loanBadgeLabel,
+  showActions = true,
 }: GameCardProps) {
   const [imgError, setImgError] = useState(false);
   const statusCfg = status ? STATUS_CONFIG[status] : null;
@@ -196,51 +200,55 @@ export default function GameCard({
         )}
 
         {/* Actions */}
-        <div className="mt-auto flex items-center gap-2 pt-2">
-          {onPrimaryAction ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPrimaryAction();
-              }}
-              className="btn-neon btn-neon-cyan flex-1 text-center text-[10px]"
-            >
-              {primaryLinkLabel}
-            </button>
-          ) : (
-            <Link
-              href={`/game?url=${encodeURIComponent(deku_url)}`}
+        {showActions && (
+          <div className="mt-auto flex items-center gap-2 pt-2">
+            {onPrimaryAction ? (
+              <button
+                type="button"
+                disabled={primaryActionDisabled}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (primaryActionDisabled) return;
+                  onPrimaryAction();
+                }}
+                className="btn-neon btn-neon-cyan flex-1 text-center text-[10px] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {primaryLinkLabel}
+              </button>
+            ) : (
+              <Link
+                href={`/game?url=${encodeURIComponent(deku_url)}`}
+                onClick={(e) => e.stopPropagation()}
+                className="btn-neon btn-neon-cyan flex-1 text-center text-[10px]"
+              >
+                {primaryLinkLabel}
+              </Link>
+            )}
+            <a
+              href={deku_url}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="btn-neon btn-neon-cyan flex-1 text-center text-[10px]"
+              className="btn-neon btn-neon-cyan text-[10px] flex items-center justify-center p-2"
+              title="Open game page in new tab"
+              aria-label="Open game page in new tab"
             >
-              {primaryLinkLabel}
-            </Link>
-          )}
-          <a
-            href={deku_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="btn-neon btn-neon-cyan text-[10px] flex items-center justify-center p-2"
-            title="Open game page in new tab"
-            aria-label="Open game page in new tab"
-          >
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
-          </a>
-        </div>
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          </div>
+        )}
       </div>
     </article>
   );

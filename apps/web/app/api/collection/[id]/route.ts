@@ -25,7 +25,7 @@ export async function PATCH(
   }
 
   if (hasStatus) {
-    const validStatuses: GameStatus[] = ['owned', 'wishlist', 'playing', 'completed', 'abandoned'];
+    const validStatuses: GameStatus[] = ['owned', 'playing', 'completed', 'abandoned'];
     if (!validStatuses.includes(body.status!)) {
       return NextResponse.json(
         { error: `status must be one of: ${validStatuses.join(', ')}` },
