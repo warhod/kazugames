@@ -14,7 +14,7 @@ export default async function HomePage() {
   return (
     <div className="relative z-10">
       {/* ── HERO ─────────────────────────────────── */}
-      <section className="relative px-6 pt-16 pb-20 text-center overflow-hidden">
+      <section className="relative px-6 py-16 text-center overflow-hidden">
         {/* Ambient glow blobs */}
         <div
           className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full blur-[120px] pointer-events-none opacity-20 transition-colors duration-1000"
@@ -31,62 +31,74 @@ export default async function HomePage() {
           }}
         />
 
-        {/* Eyebrow */}
-        <div
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full mb-6 border text-[10px] font-display tracking-[0.2em]"
-          style={{
-            borderColor: "var(--border-subtle)",
-            background: "var(--bg-elevated)",
-            color: "var(--accent)",
-          }}
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: "var(--accent)" }}
-          />
-          YOUR SWITCH LIBRARY
-        </div>
-
-        {/* Main headline */}
-        <h1 className="text-5xl md:text-7xl font-black mb-4 leading-none font-display uppercase tracking-tighter">
-          <span style={{ color: "var(--accent)" }}>DISCOVER.</span>{" "}
-          <span style={{ color: "var(--accent-secondary)" }}>COLLECT.</span>{" "}
-          <span style={{ color: "var(--text-primary)" }}>SHARE.</span>
-        </h1>
-
-        <p className="text-lg md:text-xl mb-10 max-w-xl mx-auto text-text-muted">
-          Discover Nintendo Switch games, save them to your collection, and
-          share them with your friends
-        </p>
-
-        {/* Search */}
-        <div className="max-w-2xl mx-auto">
-          <SearchBar />
-        </div>
-
-        {/* CTA badges */}
-        <div className="flex flex-wrap justify-center gap-4 mt-8">
-          {[
-            "Friend Groups",
-            "Game Lending",
-            "Lookup & add games",
-            "Wishlist & loans",
-          ].map((feat) => (
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-7">
+          {/* Eyebrow */}
+          <div
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-display tracking-[0.2em]"
+            style={{
+              borderColor: "var(--border-subtle)",
+              background: "var(--bg-elevated)",
+              color: "var(--accent)",
+            }}
+          >
             <span
-              key={feat}
-              className="px-3 py-1 rounded-full text-[10px] border font-display tracking-wider"
-              style={{
-                borderColor: "var(--border-subtle)",
-                background: "var(--bg-elevated)",
-                color: "var(--text-muted)",
-              }}
+              className="h-1.5 w-1.5 rounded-full animate-pulse"
+              style={{ background: "var(--accent)" }}
+            />
+            YOUR SWITCH LIBRARY
+          </div>
+
+          {/* Main headline */}
+          <h1 className="text-5xl leading-none font-display font-black uppercase tracking-tighter md:text-7xl">
+            <span style={{ color: "var(--accent)" }}>DISCOVER.</span>{" "}
+            <span style={{ color: "var(--accent-secondary)" }}>COLLECT.</span>{" "}
+            <span style={{ color: "var(--text-primary)" }}>SHARE.</span>
+          </h1>
+
+          {/* "How it works" between title and search */}
+          <div
+            className="w-full rounded-lg border px-4 py-4"
+            style={{
+              borderColor: "var(--border-subtle)",
+              background: "color-mix(in srgb, var(--bg-elevated) 90%, transparent)",
+            }}
+          >
+            <h2
+              className="mb-3 text-lg font-display font-bold uppercase tracking-[0.18em] sm:text-xl"
+              style={{ color: "var(--text-primary)" }}
             >
-              {feat}
-            </span>
-          ))}
+              <span style={{ color: "var(--accent)" }}>⬡</span> HOW IT WORKS
+            </h2>
+            <div
+              className="grid grid-cols-1 gap-3 text-center sm:grid-cols-3"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {[
+                "Search for a Nintendo Switch game",
+                "Add it to your collection",
+                "Share it with your group",
+              ].map((step, idx) => (
+                <div key={step} className="flex flex-col items-center gap-1">
+                  <span
+                    className="font-display text-sm font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: "var(--accent)" }}
+                  >
+                    {`0${idx + 1}`}
+                  </span>
+                  <span className="font-display text-xs uppercase tracking-[0.11em] sm:text-[13px]">
+                    {step}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Search */}
+          <div className="w-full max-w-2xl">
+            <SearchBar />
+          </div>
         </div>
       </section>
-
       {/* ── FEATURED GAMES ───────────────────────── */}
       <section className="px-6 pb-24">
         <div className="max-w-6xl mx-auto">
@@ -97,67 +109,8 @@ export default async function HomePage() {
             <h2 className="text-xl font-bold font-display text-text-primary tracking-widest uppercase">
               <span style={{ color: "var(--accent)" }}>★</span> FEATURED GAMES
             </h2>
-            <span className="text-[10px] font-display text-text-muted tracking-[0.3em] uppercase">
-              FEATURED TITLES
-            </span>
           </div>
           <CollectionGrid games={featuredGames} />
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ─────────────────────────── */}
-      <section className="px-6 pb-24">
-        <div className="max-w-4xl mx-auto">
-          <h2
-            className="text-xl font-bold font-display tracking-widest uppercase text-center mb-12"
-            style={{ color: "var(--text-primary)" }}
-          >
-            <span style={{ color: "var(--accent)" }}>⬡</span> HOW IT WORKS
-          </h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                step: "01",
-                title: "SEARCH & TRACK",
-                desc: "Look up Switch games and add titles to your collection in one click.",
-              },
-              {
-                step: "02",
-                title: "BUILD GROUPS",
-                desc: "Create a squad, invite your friends, and see everyone's libraries in one place.",
-              },
-              {
-                step: "03",
-                title: "LEND & BORROW",
-                desc: "Mark games as lendable. Friends can request to borrow — you approve or decline.",
-              },
-            ].map((item) => (
-              <div key={item.step} className="glass-card p-6 text-center">
-                <div
-                  className="text-3xl font-black font-display mb-3"
-                  style={{
-                    color: "var(--accent)",
-                    textShadow:
-                      "0 0 12px color-mix(in srgb, var(--accent) 40%, transparent)",
-                  }}
-                >
-                  {item.step}
-                </div>
-                <h3
-                  className="font-display text-sm tracking-[0.15em] mb-2"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {item.title}
-                </h3>
-                <p
-                  className="text-xs leading-relaxed"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {item.desc}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     </div>
