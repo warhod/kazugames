@@ -28,6 +28,10 @@
   --neon-pink: var(--accent-secondary);
   /* Text on filled accent buttons */
   --btn-solid-text: #080808;
+  /* Home “How it works”: outer strip vs lighter inner pills (same hue family) */
+  --how-it-works-strip-bg: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+  --how-it-works-pill-bg: rgb(49 65 104);
+  --how-it-works-pill-border: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 [data-theme="zelda"] {
@@ -48,6 +52,9 @@
   --neon-cyan: var(--accent);
   --neon-pink: var(--accent-secondary);
   --btn-solid-text: #0c0c0c;
+  --how-it-works-strip-bg: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+  --how-it-works-pill-bg: rgb(55 88 70);
+  --how-it-works-pill-border: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 [data-theme="animal-crossing"] {
@@ -68,6 +75,9 @@
   --neon-cyan: var(--accent);
   --neon-pink: var(--accent-secondary);
   --btn-solid-text: #4e342e;
+  --how-it-works-strip-bg: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  --how-it-works-pill-bg: color-mix(in srgb, #ffffff 94%, var(--accent) 6%);
+  --how-it-works-pill-border: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 /* ════════════════════════════════════════════

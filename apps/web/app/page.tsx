@@ -55,8 +55,7 @@ export default async function HomePage() {
             style={{
               borderColor:
                 "color-mix(in srgb, var(--border-subtle) 82%, transparent)",
-              background:
-                "color-mix(in srgb, var(--bg-elevated) 78%, transparent)",
+              background: "var(--how-it-works-strip-bg)",
               boxShadow:
                 "0 1px 12px color-mix(in srgb, var(--bg) 25%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--text-muted) 10%, transparent)",
             }}
@@ -80,20 +79,18 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-col items-center gap-1.5 text-center md:flex-row md:justify-center md:gap-2">
               {[
-                "01 Search for a Nintendo Switch game",
-                "02 Add games to your collection",
-                "03 Lend games to your friends",
+                "1. Search for a Switch game",
+                "2. Add games to your collection",
+                "3. Lend games to your friends",
               ].map((item, idx) => (
                 <div key={item} className="inline-flex items-center gap-2">
                   <span
                     className="inline-flex items-center rounded-full border px-2 py-1 text-[12px] font-display uppercase tracking-[0.13em]"
                     style={{
                       color:
-                        "color-mix(in srgb, var(--text-primary) 86%, var(--text-muted))",
-                      borderColor:
-                        "color-mix(in srgb, var(--border-subtle) 70%, transparent)",
-                      background:
-                        "color-mix(in srgb, var(--bg-elevated) 72%, transparent)",
+                        "color-mix(in srgb, var(--text-primary) 92%, var(--text-muted))",
+                      borderColor: "var(--how-it-works-pill-border)",
+                      background: "var(--how-it-works-pill-bg)",
                     }}
                   >
                     {item}
