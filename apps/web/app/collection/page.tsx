@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { GameStatus, DbUserGame } from "@/lib/database.types";
 import CollectionGrid from "@/components/CollectionGrid";
 import type { GameCardProps } from "@/components/GameCard";
@@ -227,19 +227,24 @@ export default function CollectionPage() {
 
   const totalPages = Math.max(1, Math.ceil(filteredTotal / perPage));
 
-  const gamesForGrid = userGames
-    .filter((ug) => ug.game)
-    .map((ug) => ({
-      id: ug.game!.id,
-      title: ug.game!.title,
-      deku_url: ug.game!.deku_url,
-      image_url: ug.game!.image_url,
-      current_price: ug.game!.current_price,
-      msrp: ug.game!.msrp,
-      platform: ug.game!.platform,
-      status: ug.status,
-      loanBadgeLabel: lentOutGameIds.has(ug.game_id) ? "LENT OUT" : undefined,
-    }));
+  // ⚡ Bolt Performance Optimization:
+  // Memoize the mapped games array so we don't recreate a new array reference
+  // on every render, which would break the memoization of CollectionGrid.
+  const gamesForGrid = useMemo(() => {
+    return userGames
+      .filter((ug) => ug.game)
+      .map((ug) => ({
+        id: ug.game!.id,
+        title: ug.game!.title,
+        deku_url: ug.game!.deku_url,
+        image_url: ug.game!.image_url,
+        current_price: ug.game!.current_price,
+        msrp: ug.game!.msrp,
+        platform: ug.game!.platform,
+        status: ug.status,
+        loanBadgeLabel: lentOutGameIds.has(ug.game_id) ? "LENT OUT" : undefined,
+      }));
+  }, [userGames, lentOutGameIds]);
 
   const signInRequired =
     error === "Sign in to Create and View your collection.";
@@ -672,7 +677,10 @@ export default function CollectionPage() {
             games={gamesForGrid}
             showStatus={true}
             primaryLinkLabel="EDIT / REMOVE"
-            onCardClick={(game) => setActiveGame(game)}
+            // ⚡ Bolt Performance Optimization:
+            // Pass the state setter directly to avoid re-creating an inline function
+            // on every render, which keeps the prop reference stable for React.memo.
+            onCardClick={setActiveGame}
           />
         )}
       </div>

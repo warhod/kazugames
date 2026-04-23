@@ -70,10 +70,6 @@ function SearchContent() {
     };
   }, [q]);
 
-  const openGameModal = (game: GameCardProps) => {
-    setActiveGame(game);
-  };
-
   return (
     <div className="relative z-10 px-6 py-8">
       <div className="max-w-6xl mx-auto">
@@ -162,7 +158,10 @@ function SearchContent() {
         <CollectionGrid
           games={games}
           loading={loading}
-          onCardClick={openGameModal}
+          // ⚡ Bolt Performance Optimization:
+          // Pass the stable state setter directly instead of recreating `openGameModal`
+          // on every render, ensuring `CollectionGrid` memoization works.
+          onCardClick={setActiveGame}
         />
       </div>
 

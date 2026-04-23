@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { collectionImportCopy } from '@/lib/collection-import-copy';
 import GameCard, { type GameCardProps } from './GameCard';
 
@@ -26,7 +27,7 @@ function SkeletonCard() {
   );
 }
 
-export default function CollectionGrid({
+function CollectionGrid({
   games,
   showStatus = false,
   loading = false,
@@ -82,3 +83,9 @@ export default function CollectionGrid({
     </div>
   );
 }
+
+// ⚡ Bolt Performance Optimization:
+// Wrap CollectionGrid in React.memo to prevent unnecessary re-renders of the entire
+// game list (which can be large) when the parent component re-renders but the
+// grid props haven't changed.
+export default memo(CollectionGrid);
