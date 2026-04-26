@@ -23,12 +23,9 @@ describe('GET /api/collection', () => {
     currentMock = createQueuedSupabaseMock(
       { id: 'u1' },
       [
-        { data: null, error: null, count: 1 },
-        { data: null, error: null, count: 1 },
-        { data: null, error: null, count: 0 },
-        { data: null, error: null, count: 0 },
-        { data: null, error: null, count: 0 },
-        { data: null, error: null, count: 1 },
+        // data for the status/lendable count query
+        { data: [{ status: 'owned', lendable: true }], error: null },
+        // data for the list query
         { data: rows, error: null },
       ],
     );
