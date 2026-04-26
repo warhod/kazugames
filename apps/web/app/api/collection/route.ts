@@ -33,24 +33,6 @@ function parseFilter(raw: string | null): CollectionFilter {
   return "all";
 }
 
-/** Head-count rows; `narrow` uses `any` because Supabase’s builder generics disagree across `.select()`/`.eq()` and recurse deeply. */
-async function countUserGames(
-  supabase: ReturnType<typeof createClient>,
-  userId: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- postgrest filter vs query builder types
-  narrow: (q: any) => any,
-): Promise<number> {
-  const q = narrow(
-    supabase
-      .from("user_games")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId),
-  );
-  const { count, error } = await q;
-  if (error) throw new Error(error.message);
-  return count ?? 0;
-}
-
 function applyListFilter(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same builder generic issue as countUserGames
   q: any,
@@ -76,28 +58,37 @@ export async function GET(request: NextRequest) {
   const filter = parseFilter(searchParams.get("filter"));
 
   try {
-    const [
-      total,
-      owned,
-      playing,
-      completed,
-      abandoned,
-      lendable_count,
-    ] = await Promise.all([
-      countUserGames(supabase, user.id, (q) => q),
-      countUserGames(supabase, user.id, (q) => q.eq("status", "owned")),
-      countUserGames(supabase, user.id, (q) => q.eq("status", "playing")),
-      countUserGames(supabase, user.id, (q) => q.eq("status", "completed")),
-      countUserGames(supabase, user.id, (q) => q.eq("status", "abandoned")),
-      countUserGames(supabase, user.id, (q) => q.eq("lendable", true)),
-    ]);
+    // ⚡ Bolt Optimization: Replace 6 parallel count queries with a single query
+    // to fetch just the necessary columns, and calculate counts in-memory.
+    // This reduces network requests to Supabase from 7 to 2 per API call.
+    // Using a high limit to ensure we fetch all rows for users with large collections,
+    // avoiding issues with default pagination limits (e.g. 1000).
+    const { data: userGames, error: countError } = await supabase
+      .from("user_games")
+      .select("status, lendable")
+      .eq("user_id", user.id)
+      .limit(100000);
+
+    if (countError) throw new Error(countError.message);
 
     const status_counts: Record<GameStatus, number> = {
-      owned,
-      playing,
-      completed,
-      abandoned,
+      owned: 0,
+      playing: 0,
+      completed: 0,
+      abandoned: 0,
     };
+
+    let lendable_count = 0;
+    const total = userGames.length;
+
+    for (const game of userGames) {
+      if (game.status && game.status in status_counts) {
+        status_counts[game.status as GameStatus]++;
+      }
+      if (game.lendable) {
+        lendable_count++;
+      }
+    }
 
     let filtered_total = total;
     if (filter === "lendable") filtered_total = lendable_count;
