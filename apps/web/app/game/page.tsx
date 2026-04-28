@@ -5,6 +5,7 @@ import { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { DbGame, DbUserGame, GameStatus } from '@/lib/database.types';
+import GameDescriptionClamp from '@/components/GameDescriptionClamp';
 
 type CollectionEntry = Pick<DbUserGame, 'id' | 'status' | 'lendable'>;
 
@@ -369,11 +370,7 @@ function GameContent() {
               <PriceBadge current={game.current_price} msrp={game.msrp} />
 
               {/* Description */}
-              {game.description && (
-                <p className="text-sm leading-relaxed line-clamp-4" style={{ color: 'var(--text-muted)' }}>
-                  {game.description}
-                </p>
-              )}
+              <GameDescriptionClamp description={game.description ?? ''} />
 
               {/* Collection: status + add / remove on this screen */}
               <div

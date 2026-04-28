@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { DbGame, DbUserGame, GameStatus } from "@/lib/database.types";
 import type { GameCardProps } from "@/components/GameCard";
+import GameDescriptionClamp from "@/components/GameDescriptionClamp";
 
 type CollectionEntry = Pick<DbUserGame, "id" | "status" | "lendable">;
 
@@ -357,14 +358,9 @@ export default function GameCollectionModal({
 
             {detailsLoading ? (
               <div className="skeleton h-16 w-full rounded-md" />
-            ) : resolvedDescription ? (
-              <p
-                className="text-sm leading-relaxed line-clamp-4"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {resolvedDescription}
-              </p>
-            ) : null}
+            ) : (
+              <GameDescriptionClamp description={resolvedDescription ?? ""} />
+            )}
 
             <div
               className="pt-3 border-t"
