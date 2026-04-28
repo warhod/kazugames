@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { DbGame, DbUserGame, GameStatus } from "@/lib/database.types";
 import type { GameCardProps } from "@/components/GameCard";
 import GameDescriptionClamp from "@/components/GameDescriptionClamp";
+import useScrollLock from "@/lib/useScrollLock";
 
 type CollectionEntry = Pick<DbUserGame, "id" | "status" | "lendable">;
 
@@ -30,6 +31,7 @@ export default function GameCollectionModal({
 }: GameCollectionModalProps) {
   const router = useRouter();
   const pathname = usePathname();
+  useScrollLock(Boolean(game));
 
   const [details, setDetails] = useState<DbGame | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);

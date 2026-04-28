@@ -11,6 +11,7 @@ import type {
   DbPublicProfile,
 } from "@/lib/database.types";
 import { buildGroupInviteShareUrl } from "@/lib/group-invite";
+import useScrollLock from "@/lib/useScrollLock";
 import GameCard from "./GameCard";
 
 interface GroupDetail extends DbGroup {
@@ -106,6 +107,9 @@ export default function GroupPanel({
     null,
   );
   const [selectedBorrowerId, setSelectedBorrowerId] = useState<string>("");
+  useScrollLock(
+    showInviteModal || Boolean(lendModalGame) || confirmAction !== null,
+  );
   const isOwner = currentUserId === group.owner_id;
 
   const inviteShareText = useMemo(() => {

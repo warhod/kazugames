@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import SearchBar from "@/components/SearchBar";
-import CollectionGrid from "@/components/CollectionGrid";
+import FeaturedGamesSection from "@/components/FeaturedGamesSection";
 import { getFeaturedHottestGames } from "@/lib/featured-hottest-deals";
 
 export const metadata: Metadata = {
@@ -77,15 +77,22 @@ export default async function HomePage() {
               </span>{" "}
               How It Works
             </p>
-            <div className="flex flex-col items-center gap-1.5 text-center md:flex-row md:justify-center md:gap-2">
+            <ul
+              className="mx-auto flex w-fit max-w-full list-none flex-col items-stretch gap-1.5 text-center md:flex-row md:flex-wrap md:items-center md:justify-center md:gap-2 md:w-auto"
+              role="list"
+            >
               {[
                 "1. Search for a Switch game",
                 "2. Add games to your collection",
                 "3. Lend games to your friends",
               ].map((item, idx) => (
-                <div key={item} className="inline-flex items-center gap-2">
+                <li
+                  key={item}
+                  role="listitem"
+                  className="flex w-full flex-col items-stretch md:inline-flex md:w-auto md:flex-row md:items-center md:gap-2"
+                >
                   <span
-                    className="inline-flex items-center rounded-full border px-2 py-1 text-[12px] font-display uppercase tracking-[0.13em]"
+                    className="inline-flex min-h-7 w-full items-center justify-center rounded-full border px-2 py-1 text-[12px] font-display uppercase tracking-[0.13em] md:w-auto"
                     style={{
                       color:
                         "color-mix(in srgb, var(--text-primary) 92%, var(--text-muted))",
@@ -98,16 +105,16 @@ export default async function HomePage() {
                   {idx < 2 ? (
                     <span
                       aria-hidden
-                      className="hidden h-px w-4 rounded-full md:inline-block"
+                      className="mx-auto hidden h-px w-8 shrink-0 rounded-full md:mx-0 md:inline-block md:w-4"
                       style={{
                         background:
                           "linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-muted) 65%, transparent), transparent)",
                       }}
                     />
                   ) : null}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </section>
@@ -122,7 +129,7 @@ export default async function HomePage() {
               <span style={{ color: "var(--accent)" }}>★</span> FEATURED GAMES
             </h2>
           </div>
-          <CollectionGrid games={featuredGames} />
+          <FeaturedGamesSection games={featuredGames} />
         </div>
       </section>
     </div>
