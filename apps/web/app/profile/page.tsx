@@ -20,6 +20,8 @@ export default function ProfilePage() {
   const [friendCode, setFriendCode] = useState('');
   const [nintendoUrl, setNintendoUrl] = useState('');
   const [accountHint, setAccountHint] = useState<string | null>(null);
+  const [showFriendCodeHelp, setShowFriendCodeHelp] = useState(false);
+  const [showNintendoHelp, setShowNintendoHelp] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -161,13 +163,25 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label
-                htmlFor="pf-friend-code"
-                className="block text-[10px] font-display tracking-wider mb-1.5"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                SWITCH FRIEND CODE
-              </label>
+              <div className="mb-1.5 flex items-center gap-3">
+                <label
+                  htmlFor="pf-friend-code"
+                  className="block text-[10px] font-display tracking-wider"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  SWITCH FRIEND CODE
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowFriendCodeHelp((v) => !v)}
+                  className="text-[10px] font-display tracking-wider hover:underline"
+                  style={{ color: 'var(--accent)' }}
+                  aria-expanded={showFriendCodeHelp}
+                  aria-controls="friend-code-help"
+                >
+                  HELP
+                </button>
+              </div>
               <input
                 id="pf-friend-code"
                 type="text"
@@ -177,16 +191,34 @@ export default function ProfilePage() {
                 className="input-neon font-mono"
                 maxLength={64}
               />
+              {showFriendCodeHelp && (
+                <p id="friend-code-help" className="mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  On Nintendo Switch, open HOME Menu, select your user icon, then check your profile to find your
+                  friend code in the <span className="font-mono">SW-####-####-####</span> format.
+                </p>
+              )}
             </div>
 
             <div>
-              <label
-                htmlFor="pf-nintendo"
-                className="block text-[10px] font-display tracking-wider mb-1.5"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                NINTENDO PROFILE (HTTPS LINK)
-              </label>
+              <div className="mb-1.5 flex items-center gap-3">
+                <label
+                  htmlFor="pf-nintendo"
+                  className="block text-[10px] font-display tracking-wider"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  NINTENDO PROFILE (HTTPS LINK)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowNintendoHelp((v) => !v)}
+                  className="text-[10px] font-display tracking-wider hover:underline"
+                  style={{ color: 'var(--accent)' }}
+                  aria-expanded={showNintendoHelp}
+                  aria-controls="nintendo-profile-help"
+                >
+                  HELP
+                </button>
+              </div>
               <input
                 id="pf-nintendo"
                 type="url"
@@ -196,6 +228,24 @@ export default function ProfilePage() {
                 className="input-neon"
                 maxLength={500}
               />
+              {showNintendoHelp && (
+                <>
+                  <p id="nintendo-profile-help" className="mt-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Sign in at Nintendo Account, open your own profile page, and paste that full profile URL.
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-3 text-[11px]">
+                    <a
+                      href="https://accounts.nintendo.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      Nintendo Account
+                    </a>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
