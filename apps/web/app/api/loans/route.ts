@@ -58,16 +58,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // ⚡ Bolt Optimization: Batched membership checks
-  // Replaced 3 sequential group membership queries with a single query using .in()
-  // to reduce database round-trips and improve endpoint response time.
+  // ⚡ Bolt Optimization: Batching sequential lookups on group_members.
+  // Instead of 3 sequential queries, fetch all relevant memberships in one round-trip.
+  const requiredUsers = Array.from(new Set([user.id, owner_id, targetBorrowerId]));
   const { data: memberships } = await supabase
     .from('group_members')
     .select('user_id')
     .eq('group_id', group_id)
-    .in('user_id', [user.id, owner_id, targetBorrowerId]);
+    .in('user_id', requiredUsers);
 
-  const memberIds = new Set((memberships ?? []).map((m) => m.user_id));
+  const memberIds = new Set((Array.isArray(memberships) ? memberships : []).map(m => m.user_id));
 
   if (!memberIds.has(user.id)) {
     return NextResponse.json(
