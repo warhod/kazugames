@@ -58,7 +58,7 @@ describe('POST /api/loans', () => {
   test('403 when borrower not in group', async () => {
     currentMock = createQueuedSupabaseMock(
       { id: 'borrower' },
-      [{ data: null, error: null }],
+      [{ data: [], error: null }],
     );
     const { POST } = await import('@/app/api/loans/route');
     const req = new NextRequest('http://localhost/api/loans', {
