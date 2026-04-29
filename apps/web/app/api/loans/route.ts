@@ -58,42 +58,32 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { data: requesterMembership } = await supabase
+  // ⚡ Bolt Optimization: Batching sequential lookups on group_members.
+  // Instead of 3 sequential queries, fetch all relevant memberships in one round-trip.
+  const requiredUsers = Array.from(new Set([user.id, owner_id, targetBorrowerId]));
+  const { data: memberships } = await supabase
     .from('group_members')
-    .select('id')
+    .select('user_id')
     .eq('group_id', group_id)
-    .eq('user_id', user.id)
-    .single();
+    .in('user_id', requiredUsers);
 
-  if (!requesterMembership) {
+  const memberIds = new Set((Array.isArray(memberships) ? memberships : []).map(m => m.user_id));
+
+  if (!memberIds.has(user.id)) {
     return NextResponse.json(
       { error: 'You must be a member of the group' },
       { status: 403 },
     );
   }
 
-  const { data: ownerMembership } = await supabase
-    .from('group_members')
-    .select('id')
-    .eq('group_id', group_id)
-    .eq('user_id', owner_id)
-    .single();
-
-  if (!ownerMembership) {
+  if (!memberIds.has(owner_id)) {
     return NextResponse.json(
       { error: 'Game owner is not a member of this group' },
       { status: 400 },
     );
   }
 
-  const { data: borrowerMembership } = await supabase
-    .from('group_members')
-    .select('id')
-    .eq('group_id', group_id)
-    .eq('user_id', targetBorrowerId)
-    .single();
-
-  if (!borrowerMembership) {
+  if (!memberIds.has(targetBorrowerId)) {
     return NextResponse.json(
       { error: 'Borrower must be a member of this group' },
       { status: 400 },

@@ -79,9 +79,7 @@ describe('POST /api/loans', () => {
     currentMock = createQueuedSupabaseMock(
       { id: 'borrower' },
       [
-        { data: { id: 'm1' }, error: null },
-        { data: { id: 'm2' }, error: null },
-        { data: { id: 'm3' }, error: null },
+        { data: [{ user_id: 'borrower' }, { user_id: 'owner' }], error: null },
         { data: { id: 'ug1', lendable: true }, error: null },
         { data: null, error: null },
         { data: created, error: null },
