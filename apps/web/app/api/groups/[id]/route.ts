@@ -51,35 +51,52 @@ export async function GET(
     return NextResponse.json({ error: 'Not a member of this group' }, { status: 403 });
   }
 
-  const { data: group, error: groupErr } = await supabase
-    .from('groups')
-    .select('*')
-    .eq('id', params.id)
-    .single();
+  // ⚡ Bolt Optimization: Parallelized independent DB queries
+  // Reduced 4 sequential database round-trips to just 2 using Promise.all().
+  // 1st batch: Fetch group info and member list simultaneously since auth is verified.
+  const [
+    { data: group, error: groupErr },
+    { data: members }
+  ] = await Promise.all([
+    supabase
+      .from('groups')
+      .select('*')
+      .eq('id', params.id)
+      .single(),
+    supabase
+      .from('group_members')
+      .select('user_id, joined_at')
+      .eq('group_id', params.id)
+  ]);
 
   if (groupErr || !group) {
     return NextResponse.json({ error: 'Group not found' }, { status: 404 });
   }
 
-  const { data: members } = await supabase
-    .from('group_members')
-    .select('user_id, joined_at')
-    .eq('group_id', params.id);
-
   const memberIds = (members ?? []).map((m) => m.user_id);
 
-  const { data: lendableGames } = await supabase
-    .from('user_games')
-    .select('*, game:games(*)')
-    .in('user_id', memberIds.length > 0 ? memberIds : ['__none__'])
-    .eq('lendable', true);
-
+  let lendableGames: any[] = [];
   let profileRows: ProfileRow[] = [];
+
+  // 2nd batch: Fetch lendable games and member profiles simultaneously
+  // based on the member IDs retrieved in the first batch.
   if (memberIds.length > 0) {
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select(PROFILE_FIELDS)
-      .in('user_id', memberIds);
+    const [
+      { data: lendableData },
+      { data: profilesData }
+    ] = await Promise.all([
+      supabase
+        .from('user_games')
+        .select('*, game:games(*)')
+        .in('user_id', memberIds)
+        .eq('lendable', true),
+      supabase
+        .from('profiles')
+        .select(PROFILE_FIELDS)
+        .in('user_id', memberIds)
+    ]);
+
+    lendableGames = lendableData ?? [];
     profileRows = (profilesData ?? []) as ProfileRow[];
   }
 
@@ -91,7 +108,7 @@ export async function GET(
     profile: toPublicProfile(profileByUserId.get(m.user_id)),
   }));
 
-  const lendableWithOwners = (lendableGames ?? []).map((ug: { user_id: string }) => ({
+  const lendableWithOwners = lendableGames.map((ug: { user_id: string }) => ({
     ...ug,
     owner_profile: toPublicProfile(profileByUserId.get(ug.user_id)),
   }));
