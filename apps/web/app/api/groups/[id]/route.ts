@@ -51,35 +51,36 @@ export async function GET(
     return NextResponse.json({ error: 'Not a member of this group' }, { status: 403 });
   }
 
-  const { data: group, error: groupErr } = await supabase
-    .from('groups')
-    .select('*')
-    .eq('id', params.id)
-    .single();
+  // ⚡ Bolt Optimization: Parallelize independent sequential queries
+  // Fetch group details and members concurrently to reduce database round-trips.
+  const [
+    { data: group, error: groupErr },
+    { data: members }
+  ] = await Promise.all([
+    supabase.from('groups').select('*').eq('id', params.id).single(),
+    supabase.from('group_members').select('user_id, joined_at').eq('group_id', params.id)
+  ]);
 
   if (groupErr || !group) {
     return NextResponse.json({ error: 'Group not found' }, { status: 404 });
   }
 
-  const { data: members } = await supabase
-    .from('group_members')
-    .select('user_id, joined_at')
-    .eq('group_id', params.id);
-
   const memberIds = (members ?? []).map((m) => m.user_id);
 
-  const { data: lendableGames } = await supabase
-    .from('user_games')
-    .select('*, game:games(*)')
-    .in('user_id', memberIds.length > 0 ? memberIds : ['__none__'])
-    .eq('lendable', true);
-
+  let lendableGames: any[] = [];
   let profileRows: ProfileRow[] = [];
+
   if (memberIds.length > 0) {
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select(PROFILE_FIELDS)
-      .in('user_id', memberIds);
+    // ⚡ Bolt Optimization: Parallelize independent queries based on memberIds
+    // Fetch user_games and profiles concurrently.
+    const [
+      { data: gamesData },
+      { data: profilesData }
+    ] = await Promise.all([
+      supabase.from('user_games').select('*, game:games(*)').in('user_id', memberIds).eq('lendable', true),
+      supabase.from('profiles').select(PROFILE_FIELDS).in('user_id', memberIds)
+    ]);
+    lendableGames = gamesData ?? [];
     profileRows = (profilesData ?? []) as ProfileRow[];
   }
 
