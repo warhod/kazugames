@@ -51,37 +51,48 @@ export async function GET(
     return NextResponse.json({ error: 'Not a member of this group' }, { status: 403 });
   }
 
-  const { data: group, error: groupErr } = await supabase
-    .from('groups')
-    .select('*')
-    .eq('id', params.id)
-    .single();
+  // ⚡ Bolt Optimization: Parallel query resolution
+  // Fetch group details and member list simultaneously instead of sequentially.
+  const [groupResponse, membersResponse] = await Promise.all([
+    supabase
+      .from('groups')
+      .select('*')
+      .eq('id', params.id)
+      .single(),
+    supabase
+      .from('group_members')
+      .select('user_id, joined_at')
+      .eq('group_id', params.id)
+  ]);
+
+  const { data: group, error: groupErr } = groupResponse;
+  const { data: members } = membersResponse;
 
   if (groupErr || !group) {
     return NextResponse.json({ error: 'Group not found' }, { status: 404 });
   }
 
-  const { data: members } = await supabase
-    .from('group_members')
-    .select('user_id, joined_at')
-    .eq('group_id', params.id);
-
   const memberIds = (members ?? []).map((m) => m.user_id);
 
-  const { data: lendableGames } = await supabase
-    .from('user_games')
-    .select('*, game:games(*)')
-    .in('user_id', memberIds.length > 0 ? memberIds : ['__none__'])
-    .eq('lendable', true);
+  // ⚡ Bolt Optimization: Parallel query resolution
+  // Fetch lendable games and profiles simultaneously instead of sequentially.
+  // This reduces the total sequential query steps in this endpoint from 5 down to 3.
+  const [lendableGamesResponse, profilesResponse] = await Promise.all([
+    supabase
+      .from('user_games')
+      .select('*, game:games(*)')
+      .in('user_id', memberIds.length > 0 ? memberIds : ['__none__'])
+      .eq('lendable', true),
+    memberIds.length > 0
+      ? supabase
+          .from('profiles')
+          .select(PROFILE_FIELDS)
+          .in('user_id', memberIds)
+      : Promise.resolve({ data: [] })
+  ]);
 
-  let profileRows: ProfileRow[] = [];
-  if (memberIds.length > 0) {
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select(PROFILE_FIELDS)
-      .in('user_id', memberIds);
-    profileRows = (profilesData ?? []) as ProfileRow[];
-  }
+  const { data: lendableGames } = lendableGamesResponse;
+  const profileRows = (profilesResponse.data ?? []) as ProfileRow[];
 
   const profileByUserId = new Map(profileRows.map((p) => [p.user_id, p]));
 
